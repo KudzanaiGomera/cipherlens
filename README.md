@@ -1,26 +1,24 @@
-Business Case / Tool Proposal
+# Cipher Lens
 
-I have identified a recurring challenge during security investigations where many publicly available decoding platforms are inaccessible due to organizational security controls, and using external websites to process potentially sensitive data introduces data exposure concerns.
+Offline decoder/encoder for SOC analysts. One file (`index.html`), no dependencies, no network calls.
 
-For example, during a recent CrowdStrike investigation, multiple alerts were generated as a result of an application account executing Base64-encoded reconnaissance commands. While the encoded commands required decoding for proper analysis, leveraging external decoding services was not an acceptable option due to the risk of exposing internal command strings and operational data. This resulted in additional investigation time and reduced analyst efficiency.
+## Host on GitHub Pages
+1. Create a repo and commit `index.html` (and this README).
+2. Settings > Pages > deploy from the `main` branch, root folder.
+3. Open the published URL.
 
-To address this gap, I propose the development of an internal encoding and decoding analysis platform that enables Security Operations analysts to safely decode and analyze encoded content within the corporate environment. The tool should be capable of:
+## Security notes
+- Public GitHub Pages sites are readable by anyone. Use a private/internal Pages plan or an internal web server if the tool itself must not be public.
+- Data never leaves the tab. The page's Content-Security-Policy meta tag blocks network requests, but GitHub Pages cannot send real security headers, so treat the meta tag as defence in depth.
+- Only the "Alternative tools" links go off-site. Delete that section if your policy requires zero outbound links.
+- Record the approved version: `sha256sum index.html`. Re-check after every change.
+- Findings, MITRE tags and the triage hint are heuristics. Confirm in your EDR/SIEM.
 
-Automatically identifying the encoding or obfuscation technique used.
-Supporting common attacker encoding methods such as Base64, URL Encoding, Hex, Unicode, JWT, Gzip, ROT13, HTML Encoding, XOR, and other frequently observed techniques.
-Providing one-click decoding and recursive decoding capabilities for layered encodings.
-Highlighting suspicious patterns, commands, IP addresses, URLs, hashes, and indicators found within decoded content.
-Maintaining all processing internally to eliminate the need for third-party websites and reduce data leakage risk.
-Supporting analyst workflows for incident response, threat hunting, malware analysis, and alert triage.
+## Supported
+Decode + encode: Base64 (+URL-safe, Gzip/zlib, UTF-16LE), Base32, Hex, URL, Unicode/`\x`, HTML entities, char codes, Binary, ROT13, Reverse, XOR (key), JWT (decode).
+Decode only: XOR brute-force (1 byte), PowerShell de-obfuscation (backticks, string concatenation, `[char]`).
+Encode only: PowerShell `-EncodedCommand`, Gzip + Base64.
+Files: open or drag a file onto the input (max 5 MB; binary files load as hex).
 
-From a user experience perspective, the solution would provide functionality similar to CyberChef, while adopting a modern, security-focused interface comparable to Base64 Decode tools, including:
-
-Dark mode by default.
-Simple input/output panels.
-Automatic encoding detection.
-Copy/export functionality.
-Investigation-focused visualizations and decoding history.
-
-The overall objective is to improve investigation efficiency, reduce reliance on external websites, minimize data exposure risks, and provide SOC analysts with a centralized tool for decoding and analyzing attacker-obfuscated content.
-
-make it single scalable and light weight application hostable on GitHub pages. html file.
+## Not yet included
+Base58/Base85, raw deflate, multi-byte XOR key recovery, hex-dump view, Web Worker for very large inputs, user-editable detection rules.
