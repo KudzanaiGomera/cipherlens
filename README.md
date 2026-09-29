@@ -23,4 +23,4 @@ Investigation-focused visualizations and decoding history.
 
 The overall objective is to improve investigation efficiency, reduce reliance on external websites, minimize data exposure risks, and provide SOC analysts with a centralized tool for decoding and analyzing attacker-obfuscated content.
 
-make it 1 file.
+make it single scalable and light weight application hostable on GitHub pages. html file.
