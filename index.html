@@ -114,6 +114,8 @@ textarea,pre{height:clamp(200px,38vh,340px)}
 .lnk:hover{background:none;text-decoration:underline}
 .swap{width:46px;height:46px;border:2px solid var(--tx);border-radius:0;font-size:20px;padding:0;line-height:1}
 .actions{justify-content:center;margin:20px 0 12px}
+.urltools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
+.urltools .lbl{margin:0 8px 0 0;color:var(--mut)}
 .io .chips{justify-content:center}
 .io .chain{margin-bottom:12px}
 @media(max-width:900px){
@@ -122,6 +124,8 @@ textarea,pre{height:clamp(200px,38vh,340px)}
 }
 @media(max-width:600px){
   .io{padding:12px}
+  .urltools .lbl{flex-basis:100%}
+  .urltools button{flex:1 1 calc(50% - 8px)}
   .iogrid textarea,.iogrid pre{height:clamp(180px,30vh,260px);padding:10px}
   .actions{margin:14px 0 10px}
 }
@@ -164,6 +168,13 @@ button.clr{padding:7px 22px;font-weight:600}
 <div class="segw"><div class="seg" role="group" aria-label="Mode"><button id="mDec" class="on" aria-pressed="true">Decode</button><button id="mEnc" aria-pressed="false">Encode</button><button id="mBat" aria-pressed="false">Batch</button></div></div>
 <main>
   <section class="panel io">
+    <div class="urltools" aria-label="URL tools">
+      <div class="lbl">URL TOOLS</div>
+      <button id="bDefang" title="Defang URLs in the input for SOC documentation">Defang URLs</button>
+      <button id="bRefang" title="Restore hxxp and [.] in defanged URLs">Refang URLs</button>
+      <button id="bUrlSpace" title="Remove percent-encoded spaces (%20) from URLs">Remove URL spaces</button>
+      <button id="bExtract" title="Extract indicators from the current output">Extract IOCs</button>
+    </div>
     <div class="iogrid">
       <div class="col">
         <div class="lbl">INPUT:</div>
@@ -179,10 +190,6 @@ button.clr{padding:7px 22px;font-weight:600}
     </div>
     <div class="bar actions">
       <button class="pri" id="bAuto">Decode</button>
-      <button id="bDefang" title="Defang URLs in the input for SOC documentation">Defang URLs</button>
-      <button id="bRefang" title="Restore hxxp and [.] in defanged URLs">Refang URLs</button>
-      <button id="bUrlSpace" title="Remove percent-encoded spaces (%20) from URLs">Remove URL spaces</button>
-      <button id="bExtract" title="Extract indicators from the current output">Extract IOCs</button>
       <button id="bReset" class="clr">Clear</button>
       <label class="key" id="encWrap" hidden>Encoding <select id="encSel"></select></label>
       <label class="key">XOR key <input id="key" placeholder="text or 0x41" autocomplete="off"></label>
