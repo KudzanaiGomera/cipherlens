@@ -9,6 +9,7 @@ Additional investigation tools:
 - **Extract IOCs** puts the unique indicators from the current output into a copyable list. Export indicators as CSV or STIX 2.1, or create a Markdown report.
 - **Local file hashes** calculates MD5, SHA-1 and SHA-256 for files opened in the app. Files stay in the browser; the normal file size limit applies.
 - **Batch URL transforms** defangs, refangs or removes `%20` from every non-empty line in a batch file, with a copyable result list.
+- **Session snapshots** save the current decode stack, batch results and history in browser storage so you can restore an investigation later without leaving the tab.
 
 ## Planned
 Optional AI assistance may be added later to explain selected decoded content or summarize indicators. It would require an external AI service, so CipherLens would clearly disclose what text is sent and ask for confirmation before each request. AI assistance is not currently implemented; the app remains offline and processes data locally.

