@@ -190,8 +190,11 @@ button.clr{padding:7px 22px;font-weight:600}
       </div>
       <button class="swap" id="bSwap" title="Use output as input" aria-label="Use output as input">&#8645;</button>
       <div class="col">
-        <div class="lbl">OUTPUT:</div>
-        <pre id="out" aria-label="Output" tabindex="0" aria-live="polite"></pre>
+        <div class="lbl" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span>OUTPUT:</span>
+          <button class="lnk" id="bCopyOutput" type="button" title="Copy current output" aria-label="Copy current output">[copy]</button>
+        </div>
+        <pre id="out" aria-label="Output" tabindex="0" aria-live="polite" title="Click to copy the current output"></pre>
         <div class="foot"><span id="ocnt">0 chars</span><span><button class="lnk" id="bCopy">[copy]</button><button class="lnk" id="bIoc">[copy iocs]</button><button class="lnk" id="bMd">[copy md]</button><button class="lnk" id="bJson">[export json]</button><button class="lnk" id="bWrap">[wrap: on]</button></span></div>
       </div>
     </div>
@@ -699,6 +702,9 @@ const clearAll=()=>{if(mode=='bat'){rows=[];renderBatch();$('#batchTransform').h
 $('#bClear').onclick=clearAll;$('#bReset').onclick=clearAll;
 $('#bSample').onclick=()=>{if(mode=='bat'){setInput(batchSample());batch();return}if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
 $('#bCopy').onclick=()=>copy(cur());
+$('#bCopyOutput').onclick=()=>{const t=cur();if(t){copy(t)}else{toast('Nothing to copy yet')}};
+$('#out').addEventListener('click',()=>{const t=cur();if(t)copy(t);});
+$('#out').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'){e.preventDefault();const t=cur();if(t)copy(t);}});
 $('#bHC').onclick=()=>{hist=[];renderHist()};
 $('#bSaveSession').onclick=()=>{saveSessionState();toast('Session saved locally');};
 $('#bLoadSession').onclick=()=>{if(!restoreSessionState())toast('No saved session found');};
