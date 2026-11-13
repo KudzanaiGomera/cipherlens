@@ -2,6 +2,17 @@
 
 Offline decoder/encoder for SOC analysts. One file (`index.html`), no dependencies, no network calls.
 
+Use **Defang URLs** to convert URLs in pasted text into documentation-safe forms such as `hxxps://example[.]com/path`. **Refang URLs** restores `http(s)://` and `[.]` in defanged URLs. **Remove URL spaces** removes `%20` from URLs. Each transformed result appears in the output pane for copying. IOC copy and Markdown report actions also provide defanged indicators.
+
+Additional investigation tools:
+- **URL breakdown** parses detected URLs locally into scheme, host, port, path, query and fragment. It never opens or contacts a URL.
+- **Extract IOCs** puts the unique indicators from the current output into a copyable list. Export indicators as CSV or STIX 2.1, or create a Markdown report.
+- **Local file hashes** calculates MD5, SHA-1 and SHA-256 for files opened in the app. Files stay in the browser; the normal file size limit applies.
+- **Batch URL transforms** defangs, refangs or removes `%20` from every non-empty line in a batch file, with a copyable result list.
+
+## Planned
+Optional AI assistance may be added later to explain selected decoded content or summarize indicators. It would require an external AI service, so CipherLens would clearly disclose what text is sent and ask for confirmation before each request. AI assistance is not currently implemented; the app remains offline and processes data locally.
+
 ## Host on GitHub Pages
 1. Create a repo and commit `index.html` (and this README).
 2. Settings > Pages > deploy from the `main` branch, root folder.

