@@ -19,6 +19,15 @@ Optional AI assistance may be added later to explain selected decoded content or
 2. Settings > Pages > deploy from the `main` branch, root folder.
 3. Open the published URL.
 
+## Deploy to Cloudflare Workers
+The repository includes an assets-only Wrangler config and a PowerShell deploy script. From the repository root, run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1
+```
+
+The script stages only `index.html` and deploys it to the `cipherlens` Worker. On first use, authenticate with `npx.cmd --yes wrangler@4 login --use-keyring`. To validate without deploying, add `-DryRun` to the PowerShell command.
+
 ## Security notes
 - Public GitHub Pages sites are readable by anyone. Use a private/internal Pages plan or an internal web server if the tool itself must not be public.
 - Data never leaves the tab. The page's Content-Security-Policy meta tag blocks network requests, but GitHub Pages cannot send real security headers, so treat the meta tag as defence in depth.
