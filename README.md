@@ -44,13 +44,13 @@ Optional AI assistance may be added later to explain selected decoded content or
 4. Open the `*.pages.dev` URL shown by Wrangler. Future updates can be published by rerunning the deploy command.
 
 ## Deploy to Cloudflare Workers
-The assets-only Wrangler config stages `index.html` into `.deploy-assets` before deploying, so `npx wrangler deploy` also works in Cloudflare Workers Builds. The repository includes a PowerShell deploy script for local deployments; from the repository root, run:
+The Wrangler config serves assets from the repository root, and `.assetsignore` ensures only `index.html` is uploaded. This avoids relying on a generated folder that is not present in Cloudflare Workers Builds. The repository includes a PowerShell deploy script for local deployments; from the repository root, run:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1
 ```
 
-The script stages only `index.html` and deploys it to the `cipherlens` Worker. On first use, authenticate with `npx.cmd --yes wrangler@4 login --use-keyring`. To validate without deploying, add `-DryRun` to the PowerShell command.
+The script deploys the `cipherlens` Worker. On first use, authenticate with `npx.cmd --yes wrangler@4 login --use-keyring`. To validate without deploying, add `-DryRun` to the PowerShell command.
 
 ## Security notes
 - Public GitHub Pages sites are readable by anyone. Use a private/internal Pages plan or an internal web server if the tool itself must not be public.
