@@ -44,7 +44,7 @@ Optional AI assistance may be added later to explain selected decoded content or
 4. Open the `*.pages.dev` URL shown by Wrangler. Future updates can be published by rerunning the deploy command.
 
 ## Deploy to Cloudflare Workers
-The repository also includes an assets-only Wrangler config and a PowerShell deploy script for Workers. From the repository root, run:
+The assets-only Wrangler config stages `index.html` into `.deploy-assets` before deploying, so `npx wrangler deploy` also works in Cloudflare Workers Builds. The repository includes a PowerShell deploy script for local deployments; from the repository root, run:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1

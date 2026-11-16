@@ -2,6 +2,9 @@
   "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
   "name": "cipherlens",
   "compatibility_date": "2026-11-13",
+  "build": {
+    "command": "node -e \"const fs = require('node:fs'); fs.mkdirSync('.deploy-assets', { recursive: true }); fs.copyFileSync('index.html', '.deploy-assets/index.html')\""
+  },
   "assets": {
     "directory": "./.deploy-assets"
   }
