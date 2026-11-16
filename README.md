@@ -19,8 +19,32 @@ Optional AI assistance may be added later to explain selected decoded content or
 2. Settings > Pages > deploy from the `main` branch, root folder.
 3. Open the published URL.
 
+## Deploy to Cloudflare Pages
+
+1. Install Node.js and authenticate with Cloudflare:
+
+   ```powershell
+   npx.cmd --yes wrangler@4 login --use-keyring
+   ```
+
+2. Create a Cloudflare Pages project named `cipherlens`:
+
+   ```powershell
+   npx.cmd --yes wrangler@4 pages project create cipherlens
+   ```
+
+   Select `main` as the production branch if prompted.
+3. From the repository root, deploy the frontend:
+
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy-pages.ps1
+   ```
+
+   The script stages and uploads only `index.html` to the `cipherlens` Pages project. To use a differently named project, pass `-ProjectName your-project-name`.
+4. Open the `*.pages.dev` URL shown by Wrangler. Future updates can be published by rerunning the deploy command.
+
 ## Deploy to Cloudflare Workers
-The repository includes an assets-only Wrangler config and a PowerShell deploy script. From the repository root, run:
+The repository also includes an assets-only Wrangler config and a PowerShell deploy script for Workers. From the repository root, run:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1
